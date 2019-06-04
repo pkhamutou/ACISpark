@@ -1,6 +1,5 @@
-package alchemist
+package alchemist.old
 
-import alchemist.Command.findValues
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.values.{ ByteEnum, ByteEnumEntry }
 

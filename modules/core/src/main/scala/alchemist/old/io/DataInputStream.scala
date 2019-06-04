@@ -1,4 +1,4 @@
-package alchemist.io
+package alchemist.old.io
 
 import scala.collection.JavaConverters._
 import scala.util.Random

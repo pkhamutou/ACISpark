@@ -160,3 +160,7 @@ docs/_build/
 # Autoenv
 .env
 *~
+
+# Metals
+.metals/
+.bloop/

@@ -1,4 +1,4 @@
-package alchemist
+package alchemist.old
 
 import enumeratum.values.{ ByteEnum, ByteEnumEntry }
 import enumeratum.EnumEntry.UpperSnakecase

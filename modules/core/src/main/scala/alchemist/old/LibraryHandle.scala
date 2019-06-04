@@ -1,4 +1,4 @@
-package alchemist
+package alchemist.old
 
 case class LibraryHandle(id: LibraryID = LibraryID(0), name: String = "", path: String = "") {
 

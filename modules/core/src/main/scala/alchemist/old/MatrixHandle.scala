@@ -1,8 +1,6 @@
-package alchemist
+package alchemist.old
 
-import org.apache.spark.mllib.linalg.distributed.{ IndexedRow, IndexedRowMatrix }
-import scala.math.max
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix
 
 @SerialVersionUID(16L)
 class ProcessGrid(

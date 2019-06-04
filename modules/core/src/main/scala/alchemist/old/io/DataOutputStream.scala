@@ -1,4 +1,4 @@
-package alchemist.io
+package alchemist.old.io
 
 import scala.collection.JavaConverters._
 import java.io.{ PrintWriter, FileOutputStream, OutputStream, IOException, DataOutputStream => JDataOutputStream }
@@ -21,7 +21,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
         super.writeUTF(value)
       }
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing String '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing String '$value'");
     }
   }
 
@@ -35,7 +36,7 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
       buf.foreach(super.writeDouble)
     } catch {
       case e: IOException =>
-        println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing array of Doubles");
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing array of Doubles");
     }
   }
 
@@ -44,7 +45,7 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
       super.writeBoolean(value)
     } catch {
       case e: IOException =>
-        println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Boolean '$value'");
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Boolean '$value'");
     }
     this
   }
@@ -53,7 +54,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeByte(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Byte '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Byte '$value'");
     }
     this
   }
@@ -62,7 +64,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeBytes(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Bytes '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Bytes '$value'");
     }
     this
   }
@@ -71,7 +74,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeChar(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Char '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Char '$value'");
     }
     this
   }
@@ -80,7 +84,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeChars(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Chars '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Chars '$value'");
     }
     this
   }
@@ -89,7 +94,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeDouble(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Double '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Double '$value'");
     }
     this
   }
@@ -98,7 +104,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeFloat(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Float '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Float '$value'");
     }
     this
   }
@@ -107,7 +114,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeInt(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Int '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Int '$value'");
     }
     this
   }
@@ -116,7 +124,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeLong(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Long '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Long '$value'");
     }
     this
   }
@@ -125,7 +134,8 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.writeShort(value)
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when writing Short '$value'");
+      case e: IOException =>
+        println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when writing Short '$value'");
     }
     this
   }
@@ -134,7 +144,7 @@ class DataOutputStream(ostream: OutputStream) extends JDataOutputStream(ostream)
     try {
       super.flush()
     } catch {
-      case e: IOException => println(s"alchemist.io.DataOutputStream: IO Exception thrown when flushing");
+      case e: IOException => println(s"alchemist.old.io.DataOutputStream: IO Exception thrown when flushing");
     }
     this
   }

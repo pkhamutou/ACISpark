@@ -1,4 +1,4 @@
-package alchemist
+package alchemist.old
 
 object TestRunner {
 

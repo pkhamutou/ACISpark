@@ -1,6 +1,5 @@
-package alchemist
+package alchemist.old
 
-import scala.reflect.ClassTag
 import java.nio.{ Buffer, ByteBuffer, ByteOrder }
 import java.nio.charset.StandardCharsets
 

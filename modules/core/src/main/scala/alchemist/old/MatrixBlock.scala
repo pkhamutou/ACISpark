@@ -1,4 +1,4 @@
-package alchemist
+package alchemist.old
 
 @SerialVersionUID(13L)
 class MatrixBlock(

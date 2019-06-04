@@ -1,4 +1,4 @@
-package alchemist
+package alchemist.old
 
 case class InconsistentDatatypeException(message: String) extends Exception(message)
 case class InvalidHandshakeException(message: String)     extends Exception(message)
