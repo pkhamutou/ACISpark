@@ -9,6 +9,7 @@ lazy val SparkTestVersion  = s"${SparkVersion}_0.12.0"
 lazy val EnumeratumVersion = "1.5.13"
 lazy val CatsCoreVersion   = "1.6.0"
 lazy val CatsEffectVersion = "1.3.1"
+lazy val ScalaLogging      = "3.9.2"
 lazy val ScoptVersion      = "3.7.1"
 lazy val ScalaTestVersion  = "3.0.7"
 
@@ -28,23 +29,32 @@ lazy val compilerSettings = Seq(
     "-XX:MaxPermSize=2048M",
     "-XX:+CMSClassUnloadingEnabled"
   ),
-  scalacOptions ++= Seq("-encoding", "utf-8", "-deprecation", "-unchecked", "-feature", "-Ypartial-unification")
+  scalacOptions ++= Seq(
+    "-encoding",
+    "utf-8",
+    "-deprecation",
+    "-unchecked",
+    "-feature",
+    "-Ypartial-unification",
+    "-language:higherKinds"
+  )
 )
 
 lazy val fmtSettings = Seq(
-  scalafmtOnCompile := true
+  scalafmtOnCompile := false
 )
 
 lazy val `alchemist-core` = (project in file("modules/core"))
   .settings(testSettings, compilerSettings, fmtSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-mllib"        % SparkVersion % Provided,
-      "com.beachape"     %% "enumeratum"         % EnumeratumVersion,
-      "org.typelevel"    %% "cats-core"          % CatsCoreVersion,
-      "org.typelevel"    %% "cats-effect"        % CatsEffectVersion,
-      "org.scalatest"    %% "scalatest"          % ScalaTestVersion % Test,
-      "com.holdenkarau"  %% "spark-testing-base" % SparkTestVersion % Test
+      "org.apache.spark"           %% "spark-mllib"        % SparkVersion % Provided,
+      "com.beachape"               %% "enumeratum"         % EnumeratumVersion,
+      "org.typelevel"              %% "cats-core"          % CatsCoreVersion,
+      "org.typelevel"              %% "cats-effect"        % CatsEffectVersion,
+      "com.typesafe.scala-logging" %% "scala-logging"      % ScalaLogging,
+      "org.scalatest"              %% "scalatest"          % ScalaTestVersion % Test,
+      "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % Test
     )
   )
 

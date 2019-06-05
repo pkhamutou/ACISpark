@@ -2,7 +2,7 @@ package alchemist.old
 
 object TestRunner {
 
-  def main(args: Array[String]): Unit = {
+  def main2(args: Array[String]): Unit = {
 
     val test: String     = if (args.length > 0) args(0).toString.toLowerCase else ""
     val hostname: String = if (args.length > 1) args(1).toString else "localhost"
