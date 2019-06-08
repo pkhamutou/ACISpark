@@ -15,7 +15,8 @@ lazy val ScalaTestVersion  = "3.0.7"
 
 lazy val testSettings = Seq(
   parallelExecution in Test := false,
-  fork in Test := true
+  fork in Test := true,
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
 )
 
 lazy val compilerSettings = Seq(
@@ -46,6 +47,7 @@ lazy val fmtSettings = Seq(
 
 lazy val `alchemist-core` = (project in file("modules/core"))
   .settings(testSettings, compilerSettings, fmtSettings)
+  .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.1"))
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.spark"           %% "spark-mllib"        % SparkVersion % Provided,
