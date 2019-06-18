@@ -1,0 +1,12 @@
+<scalastyle>
+    <check enabled="true" class="org.scalastyle.scalariform.ImportOrderChecker" level="warning">
+        <parameters>
+            <parameter name="groups">java,scala,cats,others,alchemist</parameter>
+            <parameter name="group.java">javax?\..+</parameter>
+            <parameter name="group.scala">scala\..+</parameter>
+            <parameter name="group.cats">cats\..+</parameter>
+            <parameter name="group.others">^(?!alchemist).+</parameter>
+            <parameter name="group.alchemist">^(?=alchemist).+</parameter>
+        </parameters>
+    </check>
+</scalastyle>
