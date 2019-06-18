@@ -1,7 +1,7 @@
-package alchemist.old
+package alchemist
 
-import enumeratum.values.{ ByteEnum, ByteEnumEntry }
 import enumeratum.EnumEntry.UpperSnakecase
+import enumeratum.values.{ ByteEnum, ByteEnumEntry }
 
 private[alchemist] sealed abstract class Command(override val value: Byte, val label: String)
     extends ByteEnumEntry

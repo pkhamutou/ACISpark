@@ -2,7 +2,9 @@ package alchemist
 
 import cats.effect.IO
 import org.scalatest.{ FunSuite, Matchers }
+import org.scalatest.Ignore
 
+@Ignore
 class AlchemistSessionTest extends FunSuite with Matchers {
 
   test("AlchemistSession must be created and closed after calling .use") {

@@ -1,7 +1,7 @@
-package alchemist.protocol
+package alchemist.net
 
-import enumeratum.values.{ ByteEnum, ByteEnumEntry }
 import enumeratum.EnumEntry.UpperSnakecase
+import enumeratum.values.{ ByteEnum, ByteEnumEntry }
 
 private[alchemist] sealed abstract class Datatype(override val value: Byte, val label: String)
     extends ByteEnumEntry

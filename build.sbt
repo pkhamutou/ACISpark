@@ -16,7 +16,7 @@ lazy val ScalaTestVersion  = "3.0.7"
 lazy val testSettings = Seq(
   parallelExecution in Test := false,
   fork in Test := true,
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
 )
 
 lazy val compilerSettings = Seq(
@@ -42,7 +42,8 @@ lazy val compilerSettings = Seq(
 )
 
 lazy val fmtSettings = Seq(
-  scalafmtOnCompile := false
+  scalafmtOnCompile := false,
+  scalastyleConfig := file("project/scalastyle_config.xml")
 )
 
 lazy val `alchemist-core` = (project in file("modules/core"))
@@ -55,6 +56,7 @@ lazy val `alchemist-core` = (project in file("modules/core"))
       "org.typelevel"              %% "cats-core"          % CatsCoreVersion,
       "org.typelevel"              %% "cats-effect"        % CatsEffectVersion,
       "com.typesafe.scala-logging" %% "scala-logging"      % ScalaLogging,
+      "ch.qos.logback"             % "logback-classic"     % "1.2.3",
       "org.scalatest"              %% "scalatest"          % ScalaTestVersion % Test,
       "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % Test
     )
@@ -74,5 +76,6 @@ lazy val `alchemist-example` = (project in file("modules/example"))
   .dependsOn(`alchemist-core`)
 
 lazy val alchemist = (project in file("."))
+  .settings(fmtSettings)
   .disablePlugins(AssemblyPlugin)
   .aggregate(`alchemist-core`, `alchemist-example`)

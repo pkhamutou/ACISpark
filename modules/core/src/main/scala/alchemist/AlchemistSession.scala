@@ -1,10 +1,22 @@
 package alchemist
 
-import cats.effect._
-import com.typesafe.scalalogging.LazyLogging
 import java.net.Socket
+import java.util.Collections
+
+import cats.effect.{Resource, Sync}
+import com.typesafe.scalalogging.LazyLogging
+import java.util
 
 class AlchemistSession(socket: Socket) extends LazyLogging {
+
+  def handshake(): Unit = {
+    val msg = alchemist.net.Message.handshake(0, 0).toArray
+
+    println(s"${msg.length} and ${msg.toList}")
+
+    socket.getOutputStream.write(msg)
+    socket.getOutputStream.flush()
+  }
 
   def close(): Unit = logger.info("closing alchemist session!")
 }
