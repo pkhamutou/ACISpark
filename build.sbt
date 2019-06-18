@@ -13,9 +13,12 @@ lazy val ScalaLogging      = "3.9.2"
 lazy val ScoptVersion      = "3.7.1"
 lazy val ScalaTestVersion  = "3.0.7"
 
+lazy val runSpark = inputKey[Unit]("Run Spark application from sbt shell")
+
 lazy val testSettings = Seq(
   parallelExecution in Test := false,
   fork in Test := true,
+  test in assembly := {},
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
 )
 
@@ -48,7 +51,7 @@ lazy val fmtSettings = Seq(
 
 lazy val `alchemist-core` = (project in file("modules/core"))
   .settings(testSettings, compilerSettings, fmtSettings)
-  .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.1"))
+  .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.spark"           %% "spark-mllib"        % SparkVersion % Provided,
@@ -56,7 +59,6 @@ lazy val `alchemist-core` = (project in file("modules/core"))
       "org.typelevel"              %% "cats-core"          % CatsCoreVersion,
       "org.typelevel"              %% "cats-effect"        % CatsEffectVersion,
       "com.typesafe.scala-logging" %% "scala-logging"      % ScalaLogging,
-      "ch.qos.logback"             % "logback-classic"     % "1.2.3",
       "org.scalatest"              %% "scalatest"          % ScalaTestVersion % Test,
       "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % Test
     )
@@ -71,7 +73,19 @@ lazy val `alchemist-example` = (project in file("modules/example"))
     ),
     run in Compile := Defaults
       .runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
-      .evaluated
+      .evaluated,
+    runMain in Compile := Defaults.runMainTask(fullClasspath in Compile, runner in (Compile, run)).evaluated
+  )
+  .settings(
+    runSpark := {
+      import sbt.complete.Parsers.spaceDelimited
+
+      val path                   = assembly.value.getAbsolutePath
+      val args                   = spaceDelimited("<args>").parsed.toList
+      val (className, arguments) = args.splitAt(1)
+
+      SparkRunner.runSpark(SparkVersion, scalaVersion.value)(className.head, arguments, path)
+    }
   )
   .dependsOn(`alchemist-core`)
 

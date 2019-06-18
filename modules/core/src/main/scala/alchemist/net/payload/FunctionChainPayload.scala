@@ -32,8 +32,6 @@ private[net] final case class FunctionChainPayload(
       bb.put(Datatype.Short.value)
         .putShort(value)
 
-    println("putting short")
-
     FunctionChainPayload(size + 3, f :: builder)
   }
 

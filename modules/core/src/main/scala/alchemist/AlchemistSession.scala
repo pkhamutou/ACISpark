@@ -11,8 +11,6 @@ class AlchemistSession(socket: Socket) extends LazyLogging {
   def handshake(): Unit = {
     val msg = alchemist.net.Message.handshake(0, 0).toArray
 
-    println(s"${msg.length} and ${msg.toList}")
-
     socket.getOutputStream.write(msg)
     socket.getOutputStream.flush()
   }
