@@ -1,7 +1,8 @@
 package alchemist.net.payload
 
-import alchemist.net.{ Datatype, MessagePayload }
 import org.scalatest.{ Assertion, FunSuite, Matchers }
+
+import alchemist.net.{ Datatype, MessagePayload }
 
 class FunctionChainPayloadTest extends FunSuite with Matchers {
 

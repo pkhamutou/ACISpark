@@ -1,11 +1,10 @@
 package alchemist
 
 import java.net.Socket
-import java.util.Collections
 
-import cats.effect.{Resource, Sync}
+import cats.effect.{ Resource, Sync }
+
 import com.typesafe.scalalogging.LazyLogging
-import java.util
 
 class AlchemistSession(socket: Socket) extends LazyLogging {
 

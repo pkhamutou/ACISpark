@@ -1,8 +1,8 @@
 package alchemist
 
 import cats.effect.IO
-import org.scalatest.{ FunSuite, Matchers }
-import org.scalatest.Ignore
+
+import org.scalatest.{ FunSuite, Ignore, Matchers }
 
 @Ignore
 class AlchemistSessionTest extends FunSuite with Matchers {
@@ -13,7 +13,6 @@ class AlchemistSessionTest extends FunSuite with Matchers {
     val port = 24960
 
     val ss = new ServerSocket(port)
-
 
     AlchemistSession.make[IO]("localhost", port).use(as => IO.pure("created")).unsafeRunSync()
 
