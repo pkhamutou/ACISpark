@@ -19,4 +19,16 @@ case class MessageHeader(clientId: Short, sessionId: Short, command: Command, er
 
 object MessageHeader {
   final def HeaderLength: Int = 10
+
+  def decoder(a: Array[Byte]): MessageHeader = {
+    val bb = ByteBuffer.wrap(a)
+
+    MessageHeader(
+      clientId = bb.getShort(),
+      sessionId = bb.getShort(),
+      command = Command.withValue(bb.get()),
+      error = bb.get(),
+      size = bb.getInt()
+    )
+  }
 }

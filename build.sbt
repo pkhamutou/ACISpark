@@ -22,6 +22,9 @@ lazy val testSettings = Seq(
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
 )
 
+lazy val itSettings =
+  inConfig(IntegrationTest)(Defaults.testSettings ++ org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings)
+
 lazy val compilerSettings = Seq(
   javacOptions ++= Seq(
     "-source",
@@ -44,13 +47,16 @@ lazy val compilerSettings = Seq(
   )
 )
 
+lazy val ItTest = "it,test"
+
 lazy val fmtSettings = Seq(
   scalafmtOnCompile := false,
   scalastyleConfig := file("project/scalastyle_config.xml")
 )
 
 lazy val `alchemist-core` = (project in file("modules/core"))
-  .settings(testSettings, compilerSettings, fmtSettings)
+  .configs(IntegrationTest)
+  .settings(testSettings, compilerSettings, fmtSettings, itSettings)
   .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
   .settings(
     libraryDependencies ++= Seq(
@@ -59,7 +65,7 @@ lazy val `alchemist-core` = (project in file("modules/core"))
       "org.typelevel"              %% "cats-core"          % CatsCoreVersion,
       "org.typelevel"              %% "cats-effect"        % CatsEffectVersion,
       "com.typesafe.scala-logging" %% "scala-logging"      % ScalaLogging,
-      "org.scalatest"              %% "scalatest"          % ScalaTestVersion % Test,
+      "org.scalatest"              %% "scalatest"          % ScalaTestVersion % ItTest,
       "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % Test
     )
   )
