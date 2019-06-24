@@ -2,7 +2,7 @@ package alchemist.net
 
 import java.nio.{ ByteBuffer, ByteOrder }
 
-import alchemist.MatrixBlock
+import alchemist.data.MatrixBlock
 import alchemist.net.payload.FunctionChainPayload
 
 trait MessagePayload {

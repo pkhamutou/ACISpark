@@ -1,6 +1,6 @@
 package alchemist.net
 
-import alchemist.{ Command, MatrixBlock }
+import alchemist.data.MatrixBlock
 
 case class Message(header: MessageHeader, payload: MessagePayload) {
 

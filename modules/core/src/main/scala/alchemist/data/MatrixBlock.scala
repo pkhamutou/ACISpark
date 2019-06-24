@@ -1,4 +1,4 @@
-package alchemist
+package alchemist.data
 
 final case class MatrixBlock(
   data: Array[Double],

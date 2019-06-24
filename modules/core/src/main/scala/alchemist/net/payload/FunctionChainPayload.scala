@@ -3,7 +3,7 @@ package alchemist.net.payload
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
-import alchemist.MatrixBlock
+import alchemist.data.MatrixBlock
 import alchemist.net.{ Datatype, MessagePayload }
 
 private[net] final case class FunctionChainPayload(
