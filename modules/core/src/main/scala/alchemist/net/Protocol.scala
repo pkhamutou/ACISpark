@@ -2,12 +2,15 @@ package alchemist.net
 
 import cats.effect.{Concurrent, ContextShift, Resource}
 
+import alchemist.data.Worker
 import alchemist.net.interpreter.ProtocolInterpreter
-import alchemist.net.message.ConnectionInfo
+import alchemist.net.message.{ClientId, ConnectionInfo, SessionId}
 
 trait Protocol[F[_]] {
 
   def handshake(): F[ConnectionInfo]
+
+  def listAllWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]]
 
 }
 

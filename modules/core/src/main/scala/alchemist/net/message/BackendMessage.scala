@@ -1,32 +1,20 @@
 package alchemist.net.message
 
 import scodec.Decoder
-import scodec.codecs.StringEnrichedWithCodecContextSupport
 
-import alchemist.net.codecs.{alchemistDoubleCodec, alchemistShortCodec, alchemistStringCodec}
+import alchemist.net.message.backend.{ HandshakeOk, ListAllWorkers }
 
 trait BackendMessage
 
 object BackendMessage {
 
   def decode(c: Command): Decoder[BackendMessage] = c match {
-    case Command.Handshake => HandshakeOk.decoder
+    case Command.Handshake      => HandshakeOk.decoder
+    case Command.ListAllWorkers => ListAllWorkers.decoder
 
-    case _ => ???
+    case a => {
+      println(a)
+      throw new Exception("oh")
+    }
   }
-}
-
-case class HandshakeOk(short: Short, string: String, double: Double) extends BackendMessage
-
-object HandshakeOk {
-
-  // format: off
-  val decoder: Decoder[HandshakeOk] =  {
-    "handshake_ok" |
-      ("short"  | alchemistShortCodec)  ::
-      ("string" | alchemistStringCodec) ::
-      ("double" | alchemistDoubleCodec)
-  }.as[HandshakeOk].asDecoder
-  // format: on
-
 }

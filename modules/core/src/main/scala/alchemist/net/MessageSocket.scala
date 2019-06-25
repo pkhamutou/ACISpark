@@ -5,12 +5,12 @@ import cats.effect.{Concurrent, ContextShift, Resource}
 import scodec.Encoder
 
 import alchemist.net.interpreter.MessageSocketInterpreter
-import alchemist.net.message.{BackendMessage, Header}
+import alchemist.net.message.{BackendMessage, FrontendMessage, Header}
 
 trait MessageSocket[F[_]] {
   def receive: F[(Header, BackendMessage)]
 
-  def send[A: Encoder](a: A): F[Unit]
+  def send[A: FrontendMessage](a: A): F[Unit]
 }
 
 object MessageSocket {

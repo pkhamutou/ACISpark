@@ -4,21 +4,29 @@ import org.scalatest.WordSpec
 import scodec._
 import scodec.bits.BitVector
 import scodec.codecs._
-import shapeless.{::, HList, HNil}
 
-import alchemist.net.message.{Command, _}
+import alchemist.net.message._
+
 class ScodecTest extends WordSpec {
 
+  case class HeaderRequest(clientId: ClientId, sessionId: SessionId, command: Command)
 
-  val h = Header(ClientId(1), SessionId(1), Command.Handshake, 0, 0)
+  val s = (Codec[ClientId] ~ Codec[SessionId] ~ Codec[Command])
 
-  val c = (Codec[Header] :: byte)
+//  Header.codec.asEncoder.contramap()
+//
+//  val p = Encoder { header: Header =>
+//    for {
+//      c  <- Encoder[ClientId].encode(header.clientId)
+//      s  <- Encoder[SessionId].encode(header.sessionId)
+//      cd <- Encoder[Command].encode(header.command)
+//      er <- byte.encode(0)
+//    } yield c ++ s ++ cd ++ er
+//  }
 
-  val bb = Array[Byte](126, 126, 0, 1, 1, -5, 1, 0, 0)
+  val header = Header.request(ClientId(1), SessionId(3), Command.Handshake)
 
-  val bv = BitVector(bb)
-
-  println(bv.toByteArray.toList)
-  println(bv.dropRight(4 * 8).toByteArray.toList)
+  println(Header.codec.encode(header).require.toByteArray.toList)
+  println((Header.codec <~ int32.unit(5)).encode(header).require.toByteArray.toList)
 
 }

@@ -4,7 +4,7 @@ import scodec._
 import scodec.bits.BitVector
 import scodec.codecs._
 
-import alchemist.data.MatrixBlock
+import alchemist.data.{MatrixBlock, Worker}
 import alchemist.net.message.Datatype
 
 package object codecs {
@@ -81,5 +81,24 @@ package object codecs {
 
     getCodec(Datatype.MatrixBlock, Codec(encoder, decoder))
   }
+
+  val alchemistWorkerCodec: Codec[Worker] = getCodec(Datatype.WorkerInfo, {
+
+    val dropLength: (Short, String) => String = (_, str) => str
+
+    val addLength: String => (Short, String) = str => (str.length.toShort, str)
+
+    val strCodec = short16
+      .flatZip(fixedSizeBytes[String](_, utf8))
+      .xmap[String](dropLength, addLength)
+
+    "worker" | {
+      ("id"       | short16)  ::
+      ("hostname" | strCodec) ::
+      ("address"  | strCodec) ::
+      ("port"     | short16)  ::
+      ("group_id" | short16)
+    }.as[Worker]
+  })
 
 }

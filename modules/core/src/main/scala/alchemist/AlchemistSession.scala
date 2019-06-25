@@ -1,15 +1,18 @@
 package alchemist
 
-import cats.effect.{ Concurrent, ContextShift, Resource }
+import cats.effect.{Concurrent, ContextShift, Resource}
 
 import com.typesafe.scalalogging.LazyLogging
 
+import alchemist.data.Worker
 import alchemist.net.Protocol
-import alchemist.net.message.{ ClientId, SessionId }
+import alchemist.net.message.{ClientId, SessionId}
 
 class AlchemistSession[F[_]](clientId: ClientId, sessionId: SessionId, protocol: Protocol[F]) extends LazyLogging {
 
   logger.info(s"My data is $clientId and $sessionId")
+
+  def listAllWorkers(): F[List[Worker]] = protocol.listAllWorkers(clientId, sessionId)
 
   def close(): Unit =
     logger.info("closing alchemist session!")

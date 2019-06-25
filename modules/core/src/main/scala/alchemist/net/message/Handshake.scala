@@ -19,7 +19,7 @@ final case class Handshake(
 object Handshake {
 
   // format: off
-  val encoder: Encoder[Handshake] = {
+  implicit val encoder: Encoder[Handshake] = {
     "handshake" |
       ("byte"         | alchemistByteCodec)        ::
       ("short"        | alchemistShortCodec)       ::

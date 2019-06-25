@@ -1,13 +1,11 @@
 package alchemist.net.interpreter
 
+import cats.Monad
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 
-import cats.Monad
-import scodec.Encoder
-
 import alchemist.net.{ BitVectorSocket, MessageSocket }
-import alchemist.net.message.{ BackendMessage, Header }
+import alchemist.net.message.{ BackendMessage, FrontendMessage, Header }
 
 private[net] class MessageSocketInterpreter[F[_]: Monad](bvs: BitVectorSocket[F]) extends MessageSocket[F] {
 
@@ -19,6 +17,6 @@ private[net] class MessageSocketInterpreter[F[_]: Monad](bvs: BitVectorSocket[F]
       bvs.read(header.size).map(bits => (header, decoder.decodeValue(bits).require))
     }
 
-  override def send[A: Encoder](a: A): F[Unit] =
-    bvs.write(Encoder[A].encode(a).require)
+  override def send[A](a: A)(implicit fm: FrontendMessage[A]): F[Unit] =
+    bvs.write(fm.encoder.encode(a).require)
 }
