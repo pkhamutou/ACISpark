@@ -15,6 +15,7 @@ class ItTest extends WordSpec with Matchers {
           _ <- session.listInactiveWorkers().map(println)
           _ <- session.listActiveWorkers().map(println)
           _ <- session.listAssignedWorkers().map(println)
+          _ <- session.requestWorkers(1).map(s => println(s"Requested workers: $s"))
         } yield ()
       }
 

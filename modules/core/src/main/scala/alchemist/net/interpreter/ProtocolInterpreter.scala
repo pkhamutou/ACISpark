@@ -49,4 +49,14 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
   override def listAssignedWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] =
     listWorkers(clientId, sessionId, Command.ListAssignedWorkers)
 
+  override def requestWorkers(clientId: ClientId, sessionId: SessionId, numWorkers: Short): F[List[Worker]] = {
+    val header    = Header.request(clientId, sessionId, Command.RequestWorkers)
+
+    implicit val encoder: FrontendMessage[RequestWorkers] = FrontendMessage.prefixed[RequestWorkers](header)
+
+    ms.send(RequestWorkers(numWorkers)).flatMap(_ => ms.receive).map {
+      case (_, wrs: ListWorkers) => wrs.workers
+      case _                     => throw new Exception("Boom!")
+    }
+  }
 }
