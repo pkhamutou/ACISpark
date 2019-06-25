@@ -7,7 +7,7 @@ object ConnectionTest extends IOApp {
     AlchemistSession
       .make[IO]("localhost", 24960)
       .use { session =>
-        IO.delay(session.handshake())
+        IO.unit
       }
       .map(_ => ExitCode.Success)
 }

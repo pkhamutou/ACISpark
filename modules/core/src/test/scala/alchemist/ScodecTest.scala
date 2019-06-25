@@ -11,9 +11,6 @@ import alchemist.net.Command
 
 class ScodecTest extends WordSpec {
 
-  val bv = BitVector(Array[Byte]())
-
-//  discriminated[Command].by(byte)
 
   val h = Header(ClientId(1), SessionId(1), Command.Handshake, 0, 0)
 
@@ -21,6 +18,9 @@ class ScodecTest extends WordSpec {
 
   val bb = Array[Byte](126, 126, 0, 1, 1, -5, 1, 0, 0)
 
-  val f: Header :: Byte :: HNil = h :: 1.toByte :: HNil
+  val bv = BitVector(bb)
+
+  println(bv.toByteArray.toList)
+  println(bv.dropRight(4 * 8).toByteArray.toList)
 
 }

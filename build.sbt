@@ -8,8 +8,9 @@ lazy val SparkVersion      = "2.3.3"
 lazy val SparkTestVersion  = s"${SparkVersion}_0.12.0"
 lazy val EnumeratumVersion = "1.5.13"
 lazy val ScodecVersion     = "1.11.4"
-lazy val CatsCoreVersion   = "1.6.0"
+lazy val CatsCoreVersion   = "1.6.1"
 lazy val CatsEffectVersion = "1.3.1"
+lazy val Fs2Version        = "1.0.5"
 lazy val ScalaLogging      = "3.9.2"
 lazy val ScoptVersion      = "3.7.1"
 lazy val ScalaTestVersion  = "3.0.7"
@@ -66,6 +67,8 @@ lazy val `alchemist-core` = (project in file("modules/core"))
       "org.scodec"                 %% "scodec-core"        % ScodecVersion,
       "org.typelevel"              %% "cats-core"          % CatsCoreVersion,
       "org.typelevel"              %% "cats-effect"        % CatsEffectVersion,
+      "co.fs2"                     %% "fs2-core"           % Fs2Version,
+      "co.fs2"                     %% "fs2-io"             % Fs2Version,
       "com.typesafe.scala-logging" %% "scala-logging"      % ScalaLogging,
       "org.scalatest"              %% "scalatest"          % ScalaTestVersion % ItTest,
       "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % Test
