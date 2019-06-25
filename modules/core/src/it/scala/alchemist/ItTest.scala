@@ -10,7 +10,10 @@ class ItTest extends WordSpec with Matchers {
   "it" should {
     "work" in {
       val prg = AlchemistSession.make[IO]("localhost", 24960).use { session =>
-        session.listAllWorkers().map(println)
+        for {
+          _ <- session.listAllWorkers().map(println)
+          _ <- session.listInactiveWorkers().map(println)
+        } yield ()
       }
 
       prg.unsafeRunSync()

@@ -12,6 +12,8 @@ trait Protocol[F[_]] {
 
   def listAllWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]]
 
+  def listInactiveWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]]
+
 }
 
 object Protocol {

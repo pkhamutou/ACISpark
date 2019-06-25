@@ -8,7 +8,7 @@ import cats.FlatMap
 import alchemist.data.Worker
 import alchemist.net.{ MessageSocket, Protocol }
 import alchemist.net.message._
-import alchemist.net.message.backend.{ HandshakeOk, ListAllWorkers }
+import alchemist.net.message.backend.{ HandshakeOk, ListWorkers }
 
 private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) extends Protocol[F] {
 
@@ -35,8 +35,17 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
     val header = Header.request(clientId, sessionId, Command.ListAllWorkers)
 
     ms.send(header).flatMap(_ => ms.receive).map {
-      case (_, wrs: ListAllWorkers) => wrs.workers
-      case _                        => throw new Exception("Boom!")
+      case (_, wrs: ListWorkers) => wrs.workers
+      case _                     => throw new Exception("Boom!")
+    }
+  }
+
+  override def listInactiveWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] = {
+    val header = Header.request(clientId, sessionId, Command.ListInactiveWorkers)
+
+    ms.send(header).flatMap(_ => ms.receive).map {
+      case (_, wrs: ListWorkers) => wrs.workers
+      case _                     => throw new Exception("Boom!")
     }
   }
 }
