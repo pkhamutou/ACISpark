@@ -48,4 +48,13 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
       case _                     => throw new Exception("Boom!")
     }
   }
+
+  override def listActiveWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] = {
+    val header = Header.request(clientId, sessionId, Command.ListActiveWorkers)
+
+    ms.send(header).flatMap(_ => ms.receive).map {
+      case (_, wrs: ListWorkers) => wrs.workers
+      case _                     => throw new Exception("Boom!")
+    }
+  }
 }

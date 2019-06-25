@@ -13,6 +13,7 @@ class ItTest extends WordSpec with Matchers {
         for {
           _ <- session.listAllWorkers().map(println)
           _ <- session.listInactiveWorkers().map(println)
+          _ <- session.listActiveWorkers().map(println)
         } yield ()
       }
 

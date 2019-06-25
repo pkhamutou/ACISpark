@@ -12,6 +12,7 @@ object BackendMessage {
     case Command.Handshake           => HandshakeOk.decoder
     case Command.ListAllWorkers      => ListWorkers.decoder
     case Command.ListInactiveWorkers => ListWorkers.decoder
+    case Command.ListActiveWorkers => ListWorkers.decoder
 
     case c => throw new NotImplementedError(s"No BackendMessage.decoder implemented for $c")
   }
