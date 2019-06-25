@@ -1,7 +1,7 @@
-package alchemist.net
+package alchemist.net.message
 
 import enumeratum.EnumEntry.UpperSnakecase
-import enumeratum.values.{ ByteEnum, ByteEnumEntry }
+import enumeratum.values.{ByteEnum, ByteEnumEntry}
 
 private[alchemist] sealed abstract class Datatype(override val value: Byte) extends ByteEnumEntry with UpperSnakecase
 

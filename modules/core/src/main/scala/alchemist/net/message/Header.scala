@@ -1,21 +1,7 @@
 package alchemist.net.message
 
-import scodec.{ Codec, Encoder }
+import scodec.Codec
 import scodec.codecs._
-
-import alchemist.net.Command
-
-final case class ClientId(value: Short) extends AnyVal
-
-object ClientId {
-  implicit val codec: Codec[ClientId] = ("client_id" | short16).as[ClientId]
-}
-
-final case class SessionId(value: Short) extends AnyVal
-
-object SessionId {
-  implicit val codec: Codec[SessionId] = ("session_id" | short16).as[SessionId]
-}
 
 final case class Header(clientId: ClientId, sessionId: SessionId, command: Command, error: Byte, size: Int)
 

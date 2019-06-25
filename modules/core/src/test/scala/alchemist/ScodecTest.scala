@@ -4,11 +4,9 @@ import org.scalatest.WordSpec
 import scodec._
 import scodec.bits.BitVector
 import scodec.codecs._
-import shapeless.{HList, HNil, ::}
+import shapeless.{::, HList, HNil}
 
-import alchemist.net.message._
-import alchemist.net.Command
-
+import alchemist.net.message.{Command, _}
 class ScodecTest extends WordSpec {
 
 

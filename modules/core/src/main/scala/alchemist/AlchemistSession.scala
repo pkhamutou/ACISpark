@@ -9,7 +9,7 @@ import alchemist.net.message.{ ClientId, SessionId }
 
 class AlchemistSession[F[_]](clientId: ClientId, sessionId: SessionId, protocol: Protocol[F]) extends LazyLogging {
 
-  println(s"My data is $clientId and $sessionId")
+  logger.info(s"My data is $clientId and $sessionId")
 
   def close(): Unit =
     logger.info("closing alchemist session!")

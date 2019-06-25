@@ -1,8 +1,8 @@
-package alchemist.net
+package alchemist.net.message
 
 import enumeratum.EnumEntry.UpperSnakecase
-import enumeratum.values.{ ByteEnum, ByteEnumEntry }
-import scodec.{ Attempt, Codec, Err }
+import enumeratum.values.{ByteEnum, ByteEnumEntry}
+import scodec.{Attempt, Codec, Err}
 import scodec.codecs.byte
 
 sealed abstract class Command(override val value: Byte) extends ByteEnumEntry with UpperSnakecase

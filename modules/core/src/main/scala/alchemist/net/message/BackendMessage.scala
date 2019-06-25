@@ -3,8 +3,7 @@ package alchemist.net.message
 import scodec.Decoder
 import scodec.codecs.StringEnrichedWithCodecContextSupport
 
-import alchemist.net.Command
-import alchemist.net.codecs.{ alchemistDoubleCodec, alchemistShortCodec, alchemistStringCodec }
+import alchemist.net.codecs.{alchemistDoubleCodec, alchemistShortCodec, alchemistStringCodec}
 
 trait BackendMessage
 

@@ -5,6 +5,7 @@ import scodec.bits.BitVector
 import scodec.codecs._
 
 import alchemist.data.MatrixBlock
+import alchemist.net.message.Datatype
 
 package object codecs {
 
