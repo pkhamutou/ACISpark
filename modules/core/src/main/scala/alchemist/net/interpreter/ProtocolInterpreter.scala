@@ -31,30 +31,22 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
     }
   }
 
-  override def listAllWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] = {
-    val header = Header.request(clientId, sessionId, Command.ListAllWorkers)
-
-    ms.send(header).flatMap(_ => ms.receive).map {
+  private def listWorkers(clientId: ClientId, sessionId: SessionId, command: Command): F[List[Worker]] =
+    ms.send(Header.request(clientId, sessionId, command)).flatMap(_ => ms.receive).map {
       case (_, wrs: ListWorkers) => wrs.workers
       case _                     => throw new Exception("Boom!")
     }
-  }
 
-  override def listInactiveWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] = {
-    val header = Header.request(clientId, sessionId, Command.ListInactiveWorkers)
+  override def listAllWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] =
+    listWorkers(clientId, sessionId, Command.ListAllWorkers)
 
-    ms.send(header).flatMap(_ => ms.receive).map {
-      case (_, wrs: ListWorkers) => wrs.workers
-      case _                     => throw new Exception("Boom!")
-    }
-  }
+  override def listInactiveWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] =
+    listWorkers(clientId, sessionId, Command.ListInactiveWorkers)
 
-  override def listActiveWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] = {
-    val header = Header.request(clientId, sessionId, Command.ListActiveWorkers)
+  override def listActiveWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] =
+    listWorkers(clientId, sessionId, Command.ListActiveWorkers)
 
-    ms.send(header).flatMap(_ => ms.receive).map {
-      case (_, wrs: ListWorkers) => wrs.workers
-      case _                     => throw new Exception("Boom!")
-    }
-  }
+  override def listAssignedWorkers(clientId: ClientId, sessionId: SessionId): F[List[Worker]] =
+    listWorkers(clientId, sessionId, Command.ListAssignedWorkers)
+
 }

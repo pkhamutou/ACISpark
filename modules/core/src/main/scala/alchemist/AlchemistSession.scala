@@ -18,6 +18,8 @@ class AlchemistSession[F[_]](clientId: ClientId, sessionId: SessionId, protocol:
 
   def listActiveWorkers(): F[List[Worker]] = protocol.listActiveWorkers(clientId, sessionId)
 
+  def listAssignedWorkers(): F[List[Worker]] = protocol.listAssignedWorkers(clientId, sessionId)
+
   def close(): Unit =
     logger.info("closing alchemist session!")
 }
