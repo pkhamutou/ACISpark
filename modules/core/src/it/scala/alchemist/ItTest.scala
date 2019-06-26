@@ -15,7 +15,14 @@ class ItTest extends WordSpec with Matchers {
           _ <- session.listInactiveWorkers().map(println)
           _ <- session.listActiveWorkers().map(println)
           _ <- session.listAssignedWorkers().map(println)
-          _ <- session.requestWorkers(1).map(s => println(s"Requested workers: $s"))
+          _ <- session.requestWorkers(2).map(s => println(s"Requested workers: $s"))
+          _ <- session.listRequestedWorkers().map(s => println(s"Listed workers: $s"))
+          _ <- session.listAllWorkers().map(println)
+          _ <- session.listInactiveWorkers().map(println)
+          _ <- session.listActiveWorkers().map(println)
+          _ <- session.listAssignedWorkers().map(println)
+          testString = "This is a test string from a Spark application"
+          _ <- session.sendTestString(testString).map(println)
         } yield ()
       }
 

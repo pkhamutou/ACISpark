@@ -2,7 +2,7 @@ package alchemist.net.message
 
 import scodec.Decoder
 
-import alchemist.net.message.backend.{ HandshakeOk, ListWorkers }
+import alchemist.net.message.backend._
 
 trait BackendMessage
 
@@ -16,6 +16,7 @@ object BackendMessage {
     case Command.ListActiveWorkers   => ListWorkers.decoder
     case Command.ListAssignedWorkers => ListWorkers.decoder
     case Command.RequestWorkers      => ListWorkers.decoder
+    case Command.SendTestString      => SingleString.decoder
 
     case c => throw new NotImplementedError(s"No BackendMessage.decoder implemented for $c")
   }

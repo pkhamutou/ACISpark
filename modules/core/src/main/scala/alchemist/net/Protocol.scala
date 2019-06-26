@@ -20,6 +20,7 @@ trait Protocol[F[_]] {
 
   def requestWorkers(clientId: ClientId, sessionId: SessionId, numWorkers: Short): F[List[Worker]]
 
+  def sendTestString(clientId: ClientId, sessionId: SessionId, str: String): F[String]
 }
 
 object Protocol {

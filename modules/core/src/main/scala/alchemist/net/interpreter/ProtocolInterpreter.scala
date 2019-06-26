@@ -6,9 +6,9 @@ import cats.syntax.functor._
 import cats.FlatMap
 
 import alchemist.data.Worker
-import alchemist.net.{ MessageSocket, Protocol }
+import alchemist.net.{MessageSocket, Protocol}
 import alchemist.net.message._
-import alchemist.net.message.backend.{ HandshakeOk, ListWorkers }
+import alchemist.net.message.backend.{HandshakeOk, ListWorkers, SingleString}
 
 private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) extends Protocol[F] {
 
@@ -50,13 +50,25 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
     listWorkers(clientId, sessionId, Command.ListAssignedWorkers)
 
   override def requestWorkers(clientId: ClientId, sessionId: SessionId, numWorkers: Short): F[List[Worker]] = {
-    val header    = Header.request(clientId, sessionId, Command.RequestWorkers)
+    val header = Header.request(clientId, sessionId, Command.RequestWorkers)
 
     implicit val encoder: FrontendMessage[RequestWorkers] = FrontendMessage.prefixed[RequestWorkers](header)
 
     ms.send(RequestWorkers(numWorkers)).flatMap(_ => ms.receive).map {
       case (_, wrs: ListWorkers) => wrs.workers
       case _                     => throw new Exception("Boom!")
+    }
+  }
+
+  override def sendTestString(clientId: ClientId, sessionId: SessionId, str: String): F[String] = {
+    val header = Header.request(clientId, sessionId, Command.SendTestString)
+
+    implicit val encoder: FrontendMessage[String] =
+      FrontendMessage.prefixed[String](header)(alchemist.net.codecs.alchemistStringCodec)
+
+    ms.send(str).flatMap(_ => ms.receive).map {
+      case (_, str: SingleString) => str.value
+      case _               => throw new Exception("Boom!")
     }
   }
 }
