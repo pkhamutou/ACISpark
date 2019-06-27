@@ -9,7 +9,9 @@ import alchemist.net.message.Datatype
 
 package object codecs {
 
-  private val long64: Codec[Long] = long(64)
+  val long64: Codec[Long] = int64
+
+  val utf8_16: Codec[String] = variableSizeBytes[String](int16, utf8).withToString("string16(UTF-8)")
 
   def getCodec[A](dt: Datatype, codec: Codec[A]): Codec[A] = {
 
@@ -30,25 +32,14 @@ package object codecs {
   val alchemistByteCodec: Codec[Byte]   = getCodec(Datatype.Byte, byte)
   val alchemistShortCodec: Codec[Short] = getCodec(Datatype.Short, short16)
   val alchemistIntCodec: Codec[Int]     = getCodec(Datatype.Int, int32)
-  val alchemistLongCodec: Codec[Long]   = getCodec(Datatype.Long, long(64))
+  val alchemistLongCodec: Codec[Long]   = getCodec(Datatype.Long, long64)
 
   val alchemistFloatCodec: Codec[Float]   = getCodec(Datatype.Float, float)
   val alchemistDoubleCodec: Codec[Double] = getCodec(Datatype.Double, double)
 
   val alchemistCharCodec: Codec[Char] = getCodec(Datatype.Char, byte.xmap[Char](_.toChar, _.toByte))
 
-  val alchemistStringCodec: Codec[String] = {
-
-    val dropLength: (Short, String) => String = (_, str) => str
-
-    val addLength: String => (Short, String) = str => (str.length.toShort, str)
-
-    val codec = short16
-      .flatZip(fixedSizeBytes[String](_, utf8))
-      .xmap[String](dropLength, addLength)
-
-    getCodec(Datatype.String, codec)
-  }
+  val alchemistStringCodec: Codec[String] = getCodec(Datatype.String, utf8_16)
 
   val alchemistMatrixBlockCodec: Codec[MatrixBlock] = {
 
@@ -83,20 +74,11 @@ package object codecs {
   }
 
   val alchemistWorkerCodec: Codec[Worker] = getCodec(Datatype.WorkerInfo, {
-
-    val dropLength: (Short, String) => String = (_, str) => str
-
-    val addLength: String => (Short, String) = str => (str.length.toShort, str)
-
-    val strCodec = short16
-      .flatZip(fixedSizeBytes[String](_, utf8))
-      .xmap[String](dropLength, addLength)
-
     "worker" | {
-      ("id"       | short16)  ::
-      ("hostname" | strCodec) ::
-      ("address"  | strCodec) ::
-      ("port"     | short16)  ::
+      ("id"       | short16) ::
+      ("hostname" | utf8_16) ::
+      ("address"  | utf8_16) ::
+      ("port"     | short16) ::
       ("group_id" | short16)
     }.as[Worker]
   })
