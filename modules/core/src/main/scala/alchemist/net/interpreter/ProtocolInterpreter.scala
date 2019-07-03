@@ -5,10 +5,10 @@ import cats.syntax.functor._
 
 import cats.FlatMap
 
-import alchemist.data.Worker
-import alchemist.net.{MessageSocket, Protocol}
+import alchemist.data.{ Library, Worker }
+import alchemist.net.{ MessageSocket, Protocol }
 import alchemist.net.message._
-import alchemist.net.message.backend.{HandshakeOk, ListWorkers, SingleString}
+import alchemist.net.message.backend.{ GetLibraryId, HandshakeOk, ListWorkers, SingleString }
 
 private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) extends Protocol[F] {
 
@@ -68,7 +68,18 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
 
     ms.send(str).flatMap(_ => ms.receive).map {
       case (_, str: SingleString) => str.value
-      case _               => throw new Exception("Boom!")
+      case _                      => throw new Exception("Boom!")
+    }
+  }
+
+  def loadLibrary(clientId: ClientId, sessionId: SessionId, name: String, path: String): F[Library] = {
+    val header = Header.request(clientId, sessionId, Command.LoadLibrary)
+
+    implicit val encoder: FrontendMessage[LoadLibrary] = FrontendMessage.prefixed[LoadLibrary](header)
+
+    ms.send(LoadLibrary(name, path)).flatMap(_ => ms.receive).map {
+      case (_, id: GetLibraryId) => Library(id.value, name)
+      case _                     => throw new Exception("Boom!")
     }
   }
 }

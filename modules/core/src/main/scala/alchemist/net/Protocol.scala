@@ -2,7 +2,7 @@ package alchemist.net
 
 import cats.effect.{Concurrent, ContextShift, Resource}
 
-import alchemist.data.Worker
+import alchemist.data.{Library, Worker}
 import alchemist.net.interpreter.ProtocolInterpreter
 import alchemist.net.message.{ClientId, ConnectionInfo, SessionId}
 
@@ -21,6 +21,8 @@ trait Protocol[F[_]] {
   def requestWorkers(clientId: ClientId, sessionId: SessionId, numWorkers: Short): F[List[Worker]]
 
   def sendTestString(clientId: ClientId, sessionId: SessionId, str: String): F[String]
+
+  def loadLibrary(clientId: ClientId, sessionId: SessionId, name: String, path: String): F[Library]
 }
 
 object Protocol {

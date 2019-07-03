@@ -23,6 +23,7 @@ class ItTest extends WordSpec with Matchers {
           _ <- session.listAssignedWorkers().map(println)
           testString = "This is a test string from a Spark application"
           _ <- session.sendTestString(testString).map(println)
+          _ <- session.loadLibrary("TestLib", "/usr/local/TestLib/target/testlib.so").map(println)
         } yield ()
       }
 

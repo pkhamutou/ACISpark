@@ -17,6 +17,7 @@ object BackendMessage {
     case Command.ListAssignedWorkers => ListWorkers.decoder
     case Command.RequestWorkers      => ListWorkers.decoder
     case Command.SendTestString      => SingleString.decoder
+    case Command.LoadLibrary         => GetLibraryId.decoder
 
     case c => throw new NotImplementedError(s"No BackendMessage.decoder implemented for $c")
   }

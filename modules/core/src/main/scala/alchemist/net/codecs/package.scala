@@ -4,7 +4,7 @@ import scodec._
 import scodec.bits.BitVector
 import scodec.codecs._
 
-import alchemist.data.{MatrixBlock, Worker}
+import alchemist.data.{Library, MatrixBlock, Worker}
 import alchemist.net.message.Datatype
 
 package object codecs {
@@ -82,5 +82,8 @@ package object codecs {
       ("group_id" | short16)
     }.as[Worker]
   })
+
+  val alchemistLibraryIdCodec: Codec[Library.LibraryId] =
+    getCodec(Datatype.LibraryId, byte.xmap(Library.LibraryId, id => id.value))
 
 }

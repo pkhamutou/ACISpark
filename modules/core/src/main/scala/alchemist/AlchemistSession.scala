@@ -7,9 +7,10 @@ import cats.FlatMap
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.apply._
+
 import com.typesafe.scalalogging.LazyLogging
 
-import alchemist.data.Worker
+import alchemist.data.{ Library, Worker }
 import alchemist.net.Protocol
 import alchemist.net.message.{ ClientId, SessionId }
 
@@ -17,6 +18,7 @@ class AlchemistSession[F[_]: FlatMap](
   clientId: ClientId,
   sessionId: SessionId,
   workersRef: Ref[F, List[Worker]],
+  librariesRef: Ref[F, List[Library]],
   protocol: Protocol[F]
 ) extends LazyLogging {
 
@@ -39,6 +41,12 @@ class AlchemistSession[F[_]: FlatMap](
 
   def sendTestString(str: String): F[String] = protocol.sendTestString(clientId, sessionId, str)
 
+  def loadLibrary(name: String, path: String): F[Library] =
+    for {
+      library <- protocol.loadLibrary(clientId, sessionId, name, path)
+      _       <- librariesRef.update(library :: _)
+    } yield library
+
   def close(): Unit =
     logger.info("closing alchemist session!")
 }
@@ -53,8 +61,9 @@ object AlchemistSession extends LazyLogging {
     port: Int
   )(implicit F: Concurrent[F], CS: ContextShift[F]): Resource[F, AlchemistSession[F]] =
     for {
-      protocol <- Protocol[F](host, port)
-      workers  <- Resource.liftF(Ref.of[F, List[Worker]](Nil))
-      info     <- Resource.liftF(protocol.handshake())
-    } yield new AlchemistSession[F](info.clientId, info.sessionId, workers, protocol)
+      protocol  <- Protocol[F](host, port)
+      workers   <- Resource.liftF(Ref.of[F, List[Worker]](Nil))
+      libraries <- Resource.liftF(Ref.of[F, List[Library]](Nil))
+      info      <- Resource.liftF(protocol.handshake())
+    } yield new AlchemistSession[F](info.clientId, info.sessionId, workers, libraries, protocol)
 }
