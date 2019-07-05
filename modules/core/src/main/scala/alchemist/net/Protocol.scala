@@ -3,6 +3,7 @@ package alchemist.net
 import cats.effect.{Concurrent, ContextShift, Resource}
 
 import alchemist.data.{Library, Worker}
+import alchemist.library.Param
 import alchemist.net.interpreter.ProtocolInterpreter
 import alchemist.net.message.{ClientId, ConnectionInfo, SessionId}
 
@@ -23,6 +24,14 @@ trait Protocol[F[_]] {
   def sendTestString(clientId: ClientId, sessionId: SessionId, str: String): F[String]
 
   def loadLibrary(clientId: ClientId, sessionId: SessionId, name: String, path: String): F[Library]
+
+  def runTask(
+    clientId: ClientId,
+    sessionId: SessionId,
+    libraryId: Library.LibraryId,
+    methodName: String,
+    args: List[Param]
+  ): F[List[Param]]
 }
 
 object Protocol {

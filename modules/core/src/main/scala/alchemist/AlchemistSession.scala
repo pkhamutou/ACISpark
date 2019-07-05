@@ -1,6 +1,6 @@
 package alchemist
 
-import cats.effect.{ Concurrent, ContextShift, Resource }
+import cats.effect.{Concurrent, ContextShift, Resource}
 import cats.effect.concurrent.Ref
 
 import cats.FlatMap
@@ -10,9 +10,10 @@ import cats.syntax.apply._
 
 import com.typesafe.scalalogging.LazyLogging
 
-import alchemist.data.{ Library, Worker }
+import alchemist.data.{Library, Worker}
+import alchemist.library.Param
 import alchemist.net.Protocol
-import alchemist.net.message.{ ClientId, SessionId }
+import alchemist.net.message.{ClientId, SessionId}
 
 class AlchemistSession[F[_]: FlatMap](
   clientId: ClientId,
@@ -46,6 +47,9 @@ class AlchemistSession[F[_]: FlatMap](
       library <- protocol.loadLibrary(clientId, sessionId, name, path)
       _       <- librariesRef.update(library :: _)
     } yield library
+
+  def runTask(library: Library, methodName: String, args: List[Param]): F[List[Param]] =
+    protocol.runTask(clientId, sessionId, library.id, methodName, args)
 
   def close(): Unit =
     logger.info("closing alchemist session!")

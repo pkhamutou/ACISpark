@@ -5,10 +5,11 @@ import cats.syntax.functor._
 
 import cats.FlatMap
 
-import alchemist.data.{ Library, Worker }
-import alchemist.net.{ MessageSocket, Protocol }
+import alchemist.data.{Library, Worker}
+import alchemist.library.Param
+import alchemist.net.{MessageSocket, Protocol}
 import alchemist.net.message._
-import alchemist.net.message.backend.{ GetLibraryId, HandshakeOk, ListWorkers, SingleString }
+import alchemist.net.message.backend.{GetLibraryId, HandshakeOk, ListWorkers, SingleString}
 
 private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) extends Protocol[F] {
 
@@ -81,5 +82,23 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
       case (_, id: GetLibraryId) => Library(id.value, name)
       case _                     => throw new Exception("Boom!")
     }
+  }
+
+  def runTask(
+    clientId: ClientId,
+    sessionId: SessionId,
+    libraryId: Library.LibraryId,
+    methodName: String,
+    args: List[Param]
+  ): F[List[Param]] = {
+    val header = Header.request(clientId, sessionId, Command.RunTask)
+
+    implicit val encoder: FrontendMessage[RunTask] = FrontendMessage.prefixed[RunTask](header)
+
+    ms.send(RunTask(libraryId,methodName,args)).flatMap(_ => ms.receive).map {
+      case (_, alchemist.net.message.backend.RunTask(args0) ) => args0
+      case _                     => throw new Exception("Boom!")
+    }
+
   }
 }
