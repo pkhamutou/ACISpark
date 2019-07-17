@@ -19,6 +19,7 @@ object BackendMessage {
     case Command.SendTestString      => SingleString.decoder
     case Command.LoadLibrary         => GetLibraryId.decoder
     case Command.RunTask             => alchemist.net.message.backend.RunTask.decoder
+    case Command.MatrixInfo          => alchemist.net.message.backend.GetMatrixHandle.decoder
 
     case c => throw new NotImplementedError(s"No BackendMessage.decoder implemented for $c")
   }

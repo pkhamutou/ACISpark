@@ -4,8 +4,8 @@ import scodec._
 import scodec.bits.BitVector
 import scodec.codecs._
 
-import alchemist.data.{Library, MatrixBlock, Worker}
-import alchemist.net.message.Datatype
+import alchemist.data.{Library, Matrix, MatrixBlock, Worker}
+import alchemist.net.message.{Datatype, Layout}
 
 package object codecs {
 
@@ -85,5 +85,41 @@ package object codecs {
 
   val alchemistLibraryIdCodec: Codec[Library.LibraryId] =
     getCodec(Datatype.LibraryId, byte.xmap(Library.LibraryId, id => id.value))
+
+  val alchemistLayoutCodec: Codec[Layout] = {
+    val encoder: Encoder[Layout] = alchemistByteCodec.xmap[Layout](Layout.withValue, _.value)
+    val decoder: Decoder[Layout] = byte.xmap[Layout](Layout.withValue, _.value)
+    Codec(encoder, decoder)
+  }
+
+  val alchemistMatrixCodec: Codec[Matrix] = {
+    import Matrix.{MatrixId, ProcessGrid}
+
+    val idCodec: Codec[MatrixId] = short16.as[MatrixId]
+
+    val arrayOf2: Codec[Array[Short]] = vectorOfN(provide(2), short16)
+      .xmap[Array[Short]](_.toArray, _.toVector)
+
+    val processGridCodec = {
+      ("num_of_rows" | short16).flatPrepend { rows =>
+        ("num_of_columns" | short16).flatZipHList { columns =>
+          vectorOfN(provide(rows * columns), short16 ~ arrayOf2)
+            .xmap[Map[Short, Array[Short]]](_.toMap, _.toVector)
+        }
+      }
+    }.as[ProcessGrid]
+
+    val matrixCodec = "matrix" | {
+      ("id" | idCodec) ::
+      ("matrix_name" | utf8_16) ::
+      ("num_of_rows" | long64) ::
+      ("num_of_columns" | long64) ::
+      ("sparse" | byte) ::
+      ("layout" | alchemistLayoutCodec) ::
+      ("process_grid" | processGridCodec)
+    }.as[Matrix]
+
+    getCodec(Datatype.MatrixInfo, matrixCodec)
+  }
 
 }

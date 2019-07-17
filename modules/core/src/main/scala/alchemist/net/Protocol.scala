@@ -2,10 +2,10 @@ package alchemist.net
 
 import cats.effect.{Concurrent, ContextShift, Resource}
 
-import alchemist.data.{Library, Worker}
+import alchemist.data.{Library, Matrix, Worker}
 import alchemist.library.Param
 import alchemist.net.interpreter.ProtocolInterpreter
-import alchemist.net.message.{ClientId, ConnectionInfo, SessionId}
+import alchemist.net.message.{ClientId, ConnectionInfo, Layout, SessionId}
 
 trait Protocol[F[_]] {
 
@@ -32,6 +32,16 @@ trait Protocol[F[_]] {
     methodName: String,
     args: List[Param]
   ): F[List[Param]]
+
+  def getMatrixHandle(
+    clientId: ClientId,
+    sessionId: SessionId,
+    matrixName: String,
+    numOfRows: Long,
+    numOfColumns: Long,
+    sparse: Byte,
+    layout: Layout
+  ): F[Matrix]
 }
 
 object Protocol {

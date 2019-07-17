@@ -21,11 +21,19 @@ lazy val testSettings = Seq(
   parallelExecution in Test := false,
   fork in Test := true,
   test in assembly := {},
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
 )
 
 lazy val itSettings =
-  inConfig(IntegrationTest)(Defaults.testSettings ++ org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings)
+  inConfig(IntegrationTest)(
+    Defaults.testSettings ++
+      org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings ++
+      Seq(
+        parallelExecution in IntegrationTest := false,
+        fork in IntegrationTest := true,
+        testOptions in IntegrationTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+      )
+  )
 
 lazy val compilerSettings = Seq(
   javacOptions ++= Seq(
@@ -71,7 +79,8 @@ lazy val `alchemist-core` = (project in file("modules/core"))
       "co.fs2"                     %% "fs2-io"             % Fs2Version,
       "com.typesafe.scala-logging" %% "scala-logging"      % ScalaLogging,
       "org.scalatest"              %% "scalatest"          % ScalaTestVersion % ItTest,
-      "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % Test
+      "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % ItTest,
+      "org.apache.spark"           %% "spark-hive"         % SparkVersion % ItTest
     )
   )
 

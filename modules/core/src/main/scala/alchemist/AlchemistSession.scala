@@ -9,11 +9,12 @@ import cats.syntax.functor._
 import cats.syntax.apply._
 
 import com.typesafe.scalalogging.LazyLogging
+import org.apache.spark.mllib.linalg.distributed.{DistributedMatrix, IndexedRowMatrix}
 
-import alchemist.data.{Library, Worker}
+import alchemist.data.{Library, Matrix, Worker}
 import alchemist.library.Param
 import alchemist.net.Protocol
-import alchemist.net.message.{ClientId, SessionId}
+import alchemist.net.message.{ClientId, Layout, SessionId}
 
 class AlchemistSession[F[_]: FlatMap](
   clientId: ClientId,
@@ -50,6 +51,9 @@ class AlchemistSession[F[_]: FlatMap](
 
   def runTask(library: Library, methodName: String, args: List[Param]): F[List[Param]] =
     protocol.runTask(clientId, sessionId, library.id, methodName, args)
+
+  def getMatrixHandle(matrix: DistributedMatrix): F[Matrix] =
+    protocol.getMatrixHandle(clientId, sessionId, "Neo", matrix.numRows(), matrix.numCols(), 0, Layout.MC_MR)
 
   def close(): Unit =
     logger.info("closing alchemist session!")

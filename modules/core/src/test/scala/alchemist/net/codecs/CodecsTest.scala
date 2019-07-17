@@ -2,13 +2,14 @@ package alchemist.net.codecs
 
 import java.nio.ByteBuffer
 
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import scodec.{ Attempt, DecodeResult, Encoder, SizeBound }
+import scodec.{Attempt, DecodeResult, Encoder, SizeBound}
 import scodec.bits.BitVector
 
-import alchemist.net.message.Datatype
+import alchemist.net.message.{Datatype, Layout}
 import alchemist.AlchemistSession
+import alchemist.net.message.backend.GetMatrixHandle
 
 class CodecsTest extends WordSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
@@ -23,9 +24,14 @@ class CodecsTest extends WordSpec with Matchers with ScalaCheckDrivenPropertyChe
   "alchemistByteCodec" should {
     "test" in {
 
-      import scodec.{ Codec, Decoder }
-      import scodec.codecs._
+      val data = List[Byte](54, 0, 1, 0, 3, 78, 101, 111, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 1,
+        0, 2, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1)
 
+      val input = BitVector(data.toArray)
+
+      println(GetMatrixHandle.decoder.decode(input))
+
+      println(Layout.MC_MR.entryName)
     }
 
     "properly encode and decode data" in forAll("byte") { b: Byte =>

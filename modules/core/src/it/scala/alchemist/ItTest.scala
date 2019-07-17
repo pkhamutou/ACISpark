@@ -2,15 +2,31 @@ package alchemist
 
 import cats.effect.IO
 
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.{ Matchers, WordSpec }
 
 import alchemist.library.Param
 
-class ItTest extends WordSpec with Matchers {
+class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
 
   implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
   "it" should {
     "work" in {
+
+      import org.apache.spark.mllib.linalg.DenseVector
+      import org.apache.spark.mllib.linalg.distributed.{ IndexedRow, IndexedRowMatrix }
+
+      def getMatrix(rows: Long, cols: Long): IndexedRowMatrix = {
+        val r = new scala.util.Random(1000L)
+
+        new IndexedRowMatrix(
+          spark
+            .range(rows)
+            .rdd
+            .map(row => IndexedRow(row, new DenseVector(Array.fill(cols.toInt)(r.nextDouble()))))
+        )
+      }
+
       val args: List[Param] = List(
         Param[Byte]("in_byte", 9),
         Param("in_char", 'y'),
@@ -39,7 +55,10 @@ class ItTest extends WordSpec with Matchers {
           lib <- session.loadLibrary("TestLib", "/usr/local/TestLib/target/testlib.so")
           _ = println(lib)
           rargs <- session.runTask(lib, "greet", args)
-          _ = println(rargs)
+          _   = println(rargs)
+          _   = println("Start sending matrix ...")
+          matrix <- session.getMatrixHandle(getMatrix(20, 5))
+          _ = println(matrix)
         } yield ()
       }
 

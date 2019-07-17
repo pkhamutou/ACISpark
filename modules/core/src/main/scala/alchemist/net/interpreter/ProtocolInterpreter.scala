@@ -5,11 +5,11 @@ import cats.syntax.functor._
 
 import cats.FlatMap
 
-import alchemist.data.{Library, Worker}
+import alchemist.data.{ Library, Matrix, Worker }
 import alchemist.library.Param
-import alchemist.net.{MessageSocket, Protocol}
+import alchemist.net.{ MessageSocket, Protocol }
 import alchemist.net.message._
-import alchemist.net.message.backend.{GetLibraryId, HandshakeOk, ListWorkers, SingleString}
+import alchemist.net.message.backend.{ GetLibraryId, HandshakeOk, ListWorkers, SingleString }
 
 private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) extends Protocol[F] {
 
@@ -95,10 +95,29 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
 
     implicit val encoder: FrontendMessage[RunTask] = FrontendMessage.prefixed[RunTask](header)
 
-    ms.send(RunTask(libraryId,methodName,args)).flatMap(_ => ms.receive).map {
-      case (_, alchemist.net.message.backend.RunTask(args0) ) => args0
-      case _                     => throw new Exception("Boom!")
+    ms.send(RunTask(libraryId, methodName, args)).flatMap(_ => ms.receive).map {
+      case (_, alchemist.net.message.backend.RunTask(args0)) => args0
+      case _                                                 => throw new Exception("Boom!")
     }
 
+  }
+
+  def getMatrixHandle(
+    clientId: ClientId,
+    sessionId: SessionId,
+    matrixName: String,
+    numOfRows: Long,
+    numOfColumns: Long,
+    sparse: Byte,
+    layout: Layout
+  ): F[Matrix] = {
+    val header = Header.request(clientId, sessionId, Command.MatrixInfo)
+
+    implicit val encoder: FrontendMessage[MatrixInfo] = FrontendMessage.prefixed[MatrixInfo](header)
+
+    ms.send(MatrixInfo(matrixName, numOfRows, numOfColumns, sparse, layout)).flatMap(_ => ms.receive).map {
+      case (_, alchemist.net.message.backend.GetMatrixHandle(matrix)) => matrix
+      case _                                                          => throw new Exception("Boom!")
+    }
   }
 }
