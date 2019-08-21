@@ -8,6 +8,7 @@ private[alchemist] sealed abstract class Layout(override val value: Byte)
     extends ByteEnumEntry
     with Uppercase
     with Slashcase
+    with Serializable
 
 private[alchemist] object Layout extends ByteEnum[Layout] {
 

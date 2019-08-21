@@ -73,9 +73,11 @@ package object codecs {
     getCodec(Datatype.MatrixBlock, Codec(encoder, decoder))
   }
 
+  val alchemistWorkerIdCodec: Codec[Worker.WorkerId] = short16.as[Worker.WorkerId]
+
   val alchemistWorkerCodec: Codec[Worker] = getCodec(Datatype.WorkerInfo, {
     "worker" | {
-      ("id"       | short16) ::
+      ("id"       | alchemistWorkerIdCodec) ::
       ("hostname" | utf8_16) ::
       ("address"  | utf8_16) ::
       ("port"     | short16) ::
@@ -92,10 +94,9 @@ package object codecs {
     Codec(encoder, decoder)
   }
 
-  val alchemistMatrixCodec: Codec[Matrix] = {
-    import Matrix.{MatrixId, ProcessGrid}
+  val alchemistMatrixIdCodec: Codec[Matrix.MatrixId] = getCodec(Datatype.MatrixId, short16.as[Matrix.MatrixId])
 
-    val idCodec: Codec[MatrixId] = short16.as[MatrixId]
+  val alchemistMatrixCodec: Codec[Matrix] = {
 
     val arrayOf2: Codec[Array[Short]] = vectorOfN(provide(2), short16)
       .xmap[Array[Short]](_.toArray, _.toVector)
@@ -107,10 +108,10 @@ package object codecs {
             .xmap[Map[Short, Array[Short]]](_.toMap, _.toVector)
         }
       }
-    }.as[ProcessGrid]
+    }.as[Matrix.ProcessGrid]
 
     val matrixCodec = "matrix" | {
-      ("id" | idCodec) ::
+      ("id" | short16.as[Matrix.MatrixId]) ::
       ("matrix_name" | utf8_16) ::
       ("num_of_rows" | long64) ::
       ("num_of_columns" | long64) ::

@@ -1,22 +1,19 @@
 package alchemist
 
-import cats.effect.{Concurrent, ContextShift, Resource}
+import cats.effect._
 import cats.effect.concurrent.Ref
+import cats.implicits._
 
-import cats.FlatMap
-import cats.syntax.flatMap._
-import cats.syntax.functor._
-import cats.syntax.apply._
-
+import cats.Monad
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.mllib.linalg.distributed.{DistributedMatrix, IndexedRowMatrix}
 
 import alchemist.data.{Library, Matrix, Worker}
 import alchemist.library.Param
-import alchemist.net.Protocol
-import alchemist.net.message.{ClientId, Layout, SessionId}
+import alchemist.net.{Protocol, WorkerProtocol}
+import alchemist.net.message.{ClientId, Header, Layout, SessionId}
 
-class AlchemistSession[F[_]: FlatMap](
+final class AlchemistSession[F[_]: Sync: LiftIO](
   clientId: ClientId,
   sessionId: SessionId,
   workersRef: Ref[F, List[Worker]],
@@ -36,7 +33,7 @@ class AlchemistSession[F[_]: FlatMap](
 
   def requestWorkers(numWorkers: Short): F[List[Worker]] =
     protocol.requestWorkers(clientId, sessionId, numWorkers).flatMap { workers =>
-      workersRef.update(_ => workers).map(_ => workers)
+      Monad[F].map(workersRef.update(_ => workers))(_ => workers)
     }
 
   def listRequestedWorkers(): F[List[Worker]] = workersRef.get
@@ -44,16 +41,36 @@ class AlchemistSession[F[_]: FlatMap](
   def sendTestString(str: String): F[String] = protocol.sendTestString(clientId, sessionId, str)
 
   def loadLibrary(name: String, path: String): F[Library] =
-    for {
-      library <- protocol.loadLibrary(clientId, sessionId, name, path)
-      _       <- librariesRef.update(library :: _)
-    } yield library
+    protocol.loadLibrary(clientId, sessionId, name, path).flatMap { library =>
+      librariesRef.update(library :: _).flatMap(_ => Monad[F].pure(library))
+    }
 
   def runTask(library: Library, methodName: String, args: List[Param]): F[List[Param]] =
     protocol.runTask(clientId, sessionId, library.id, methodName, args)
 
   def getMatrixHandle(matrix: DistributedMatrix): F[Matrix] =
     protocol.getMatrixHandle(clientId, sessionId, "Neo", matrix.numRows(), matrix.numCols(), 0, Layout.MC_MR)
+
+  def sendIndexedRowMatrix(matrix: Matrix, indexedRowMatrix: IndexedRowMatrix): F[List[Header]] =
+    workersRef.get.flatMap { workers =>
+      indexedRowMatrix.rows.mapPartitions { rows =>
+        val indexedRows = rows.toArray
+
+        implicit val cs: ContextShift[IO] = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
+        val headers: IO[List[Header]] = workers
+          .traverse(WorkerProtocol.make[IO])
+          .use { wps: List[WorkerProtocol[IO]] =>
+            wps.traverse((wp: WorkerProtocol[IO]) => wp.send(matrix, indexedRows))
+          }
+
+        headers.unsafeRunSync().toIterator
+      }
+      .collect()
+      .toList
+      .pure[F]
+    }
+
 
   def close(): Unit =
     logger.info("closing alchemist session!")

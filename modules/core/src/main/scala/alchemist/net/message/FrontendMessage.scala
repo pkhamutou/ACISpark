@@ -3,7 +3,7 @@ package alchemist.net.message
 import scodec.Encoder
 import scodec.codecs._
 
-trait FrontendMessage[A] {
+trait FrontendMessage[A] extends Serializable {
   def encoder: Encoder[A]
 }
 

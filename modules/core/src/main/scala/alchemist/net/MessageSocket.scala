@@ -7,7 +7,7 @@ import scodec.Encoder
 import alchemist.net.interpreter.MessageSocketInterpreter
 import alchemist.net.message.{BackendMessage, FrontendMessage, Header}
 
-trait MessageSocket[F[_]] {
+trait MessageSocket[F[_]] extends Serializable {
   def receive: F[(Header, BackendMessage)]
 
   def send[A: FrontendMessage](a: A): F[Unit]

@@ -5,7 +5,7 @@ import enumeratum.values.{ByteEnum, ByteEnumEntry}
 import scodec.{Attempt, Codec, Err}
 import scodec.codecs.byte
 
-sealed abstract class Command(override val value: Byte) extends ByteEnumEntry with UpperSnakecase
+sealed abstract class Command(override val value: Byte) extends ByteEnumEntry with UpperSnakecase with Serializable
 
 object Command extends ByteEnum[Command] {
 

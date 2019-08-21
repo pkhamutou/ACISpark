@@ -1,15 +1,16 @@
 package alchemist
 
-import cats.effect.IO
+import cats.effect.{Concurrent, ContextShift, Effect, IO}
 
+import cats.Traverse
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.scalatest.{ Matchers, WordSpec }
+import org.scalatest.{Matchers, WordSpec}
 
 import alchemist.library.Param
 
 class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
 
-  implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+  implicit val cs: ContextShift[IO] = IO.contextShift(scala.concurrent.ExecutionContext.global)
   "it" should {
     "work" in {
 
@@ -38,6 +39,7 @@ class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
         Param("in_string", "test string")
       )
       args.foreach(println)
+
       val prg = AlchemistSession.make[IO]("localhost", 24960).use { session =>
         for {
           _ <- session.listAllWorkers().map(println)
@@ -57,8 +59,11 @@ class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
           rargs <- session.runTask(lib, "greet", args)
           _   = println(rargs)
           _   = println("Start sending matrix ...")
-          matrix <- session.getMatrixHandle(getMatrix(20, 5))
+          indexRows = getMatrix(20, 5)
+          matrix <- session.getMatrixHandle(indexRows)
           _ = println(matrix)
+          hs <- session.sendIndexedRowMatrix(matrix, indexRows)
+          _ = println(hs)
         } yield ()
       }
 

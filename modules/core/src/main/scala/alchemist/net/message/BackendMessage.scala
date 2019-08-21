@@ -4,7 +4,7 @@ import scodec.Decoder
 
 import alchemist.net.message.backend._
 
-trait BackendMessage
+trait BackendMessage extends Serializable
 
 object BackendMessage {
 
@@ -20,6 +20,7 @@ object BackendMessage {
     case Command.LoadLibrary         => GetLibraryId.decoder
     case Command.RunTask             => alchemist.net.message.backend.RunTask.decoder
     case Command.MatrixInfo          => alchemist.net.message.backend.GetMatrixHandle.decoder
+    case Command.SendMatrixBlocks    => alchemist.net.message.backend.SendIndexedRow.decoder
 
     case c => throw new NotImplementedError(s"No BackendMessage.decoder implemented for $c")
   }

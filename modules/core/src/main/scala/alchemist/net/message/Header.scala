@@ -15,17 +15,17 @@ object Header {
   // format: off
   private val encoder: Encoder[Header] = 
     "header" | fixedSizeBytes(HeaderLength - 4,
-      ("client_id"  | Codec[ClientId]) ~
-      ("session_id" | Codec[SessionId]) ~
-      ("command"    | Codec[Command]) ~
+      ("client_id"  | ClientId.codec) ~
+      ("session_id" | SessionId.codec) ~
+      ("command"    | Command.codec) ~
       ("error"      | byte)
     ).contramap[Header](h => h.clientId ~ h.sessionId ~ h.command ~ h.error).encodeOnly
 
   private val decoder: Decoder[Header] =
     "header" | fixedSizeBytes(HeaderLength,
-      ("client_id"  | Codec[ClientId])  ::
-      ("session_id" | Codec[SessionId]) ::
-      ("command"    | Codec[Command])   ::
+      ("client_id"  | ClientId.codec)  ::
+      ("session_id" | SessionId.codec) ::
+      ("command"    | Command.codec)   ::
       ("error"      | byte)             ::
       ("size"       | int32)
     ).as[Header].decodeOnly
