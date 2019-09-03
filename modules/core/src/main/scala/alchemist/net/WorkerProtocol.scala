@@ -9,43 +9,10 @@ import cats.syntax.functor._
 import cats.FlatMap
 import org.apache.spark.mllib.linalg.distributed.IndexedRow
 
-import alchemist.data.{Matrix, MatrixBlock, Worker}
+import alchemist.data.{Matrix, MatrixBlock, RowInfo, Worker}
 import alchemist.net.message._
+import alchemist.net.message.backend.RequestMatrixBlock
 
-
-object sender {
-
-  def sendIndexRows(id: Short, mh: Matrix, indexedRows: Array[IndexedRow]): (MatrixBlock, Array[Double]) = {
-    val rows = mh.getRowAssignments(id)
-    val cols = mh.getColumnAssignments(id)
-
-    val numRows: Long = math.ceil((rows(1) - rows(0) + 1) / rows(2)).toLong
-    val numCols: Long = math.ceil((cols(1) - cols(0) + 1) / cols(2)).toLong
-
-    val numElements: Long = numRows * numCols
-
-    val index = indexedRows.head.index
-    val start = index + (rows(0) + (index % rows(2))) % rows(2)
-    val end = indexedRows.last.index
-
-    val messageRows: Array[Long] = Array(start, end, rows(2))
-    val block: MatrixBlock = MatrixBlock(Array.empty[Double], messageRows, cols)
-
-    val rowIndices = NumericRange[Long](start, end, 2).toSet[Long]
-    val colIndices = NumericRange[Long](cols(0), cols(1), cols(2)).map(_.toInt)
-
-    val r = indexedRows
-      .filter(row => rowIndices.contains(row.index))
-      .map(_.vector.toArray)
-      .flatMap { xs =>
-        colIndices.foldLeft(Array.emptyDoubleArray) {
-          case (z, i) => z :+ xs(i)
-        }
-      }
-
-    (block, r)
-  }
-}
 
 final class WorkerProtocol[F[_]: FlatMap](
   clientId: ClientId,
@@ -56,48 +23,57 @@ final class WorkerProtocol[F[_]: FlatMap](
 
   def send(matrix: Matrix, indexedRows: Array[IndexedRow]): F[Header] = {
 
-    println(s"worker[${worker.id} ${this.hashCode()}, $clientId, $sessionId]")
-    val (mb, data) = sendIndexRows(worker.id.value, matrix, indexedRows)
+    println(s"send worker[${worker.id} ${this.hashCode()}, $clientId, $sessionId]")
+    val blocks = sendIndexRows(worker.id.value, matrix, indexedRows)
     val header = Header.request(clientId, sessionId, Command.SendMatrixBlocks)
 
-    val msg = SendMatrix(matrix.id, mb, data.toVector)
+    val msg = SendMatrix(matrix.id, blocks.toVector)
 
     implicit val encoder: FrontendMessage[SendMatrix] = FrontendMessage.prefixed[SendMatrix](header)
     ms.send(msg).flatMap(_ => ms.receive).map {
-      case (header, bm) => println(bm); header
+      case (header, bm) => /*println(bm);*/ header
       case _ => throw new Exception("wtf")
     }
   }
 
-  private def sendIndexRows(id: Short, mh: Matrix, indexedRows: Array[IndexedRow]): (MatrixBlock, Array[Double]) = {
-    val rows = mh.getRowAssignments(id)
-    val cols = mh.getColumnAssignments(id)
+  def get(mh: Matrix, rowIndices: Array[Long]): F[RequestMatrixBlock] = {
+    println(s"get worker[${worker.id} ${this.hashCode()}, $clientId, $sessionId]")
+    val header = Header.request(clientId, sessionId, Command.RequestMatrixBlocks)
 
-    val numRows: Long = math.ceil((rows(1) - rows(0) + 1) / rows(2)).toLong
-    val numCols: Long = math.ceil((cols(1) - cols(0) + 1) / cols(2)).toLong
+    val blocks = getIndexRows(mh, rowIndices)
 
-    val numElements: Long = numRows * numCols
+    val msg = SendMatrix(mh.id, blocks.toVector)
 
-    val index = indexedRows.head.index
-    val start = index + (rows(0) + (index % rows(2))) % rows(2)
-    val end = indexedRows.last.index
+    implicit val encoder: FrontendMessage[SendMatrix] = FrontendMessage.prefixed[SendMatrix](header)
 
-    val messageRows: Array[Long] = Array(start, end, rows(2))
-    val block: MatrixBlock = MatrixBlock(Array.empty[Double], messageRows, cols)
+    ms.send(msg).flatMap(_ => ms.receive).map {
+      case (header, block: alchemist.net.message.backend.RequestMatrixBlock) => block
+      case _ => throw new Exception("wtf")
+    }
+  }
 
-    val rowIndices = NumericRange[Long](start, end, 2).toSet[Long]
-    val colIndices = NumericRange[Long](cols(0), cols(1), cols(2)).map(_.toInt)
+  private def sendIndexRows(id: Short, mh: Matrix, indexedRows: Array[IndexedRow]): Array[MatrixBlock] = {
+    val rowInfo = mh.getRowAssignments(id)
+    val colInfo = mh.getColumnAssignments(id)
 
-    val r = indexedRows
-      .filter(row => rowIndices.contains(row.index))
-      .map(_.vector.toArray)
-      .flatMap { xs =>
-        colIndices.foldLeft(Array.emptyDoubleArray) {
-          case (z, i) => z :+ xs(i)
-        }
-      }
+    val workerRows = rowInfo.start to rowInfo.end by rowInfo.step
+    val workerCols = colInfo.start to colInfo.end by colInfo.step
 
-    (block, r)
+    indexedRows
+      .filter(row => workerRows.contains(row.index))
+      .map(row => MatrixBlock(RowInfo.single(row.index), colInfo, row.vector.toArray.toVector))
+  }
+
+  def getIndexRows(mh: Matrix, rowIndices: Array[Long]) = {
+    val rowInfo = mh.getRowAssignments(worker.id.value)
+    val colInfo = mh.getColumnAssignments(worker.id.value)
+
+    val workerRows = rowInfo.start to rowInfo.end by rowInfo.step
+    val workerCols = colInfo.start to colInfo.end by colInfo.step
+
+    rowIndices
+      .filter(workerRows.contains)
+      .map(row => { println(s"Worker [${worker.id.value} $row]"); MatrixBlock(RowInfo.single(row), colInfo, Vector.empty[Double]) } )
   }
 }
 

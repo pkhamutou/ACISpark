@@ -21,6 +21,7 @@ object BackendMessage {
     case Command.RunTask             => alchemist.net.message.backend.RunTask.decoder
     case Command.MatrixInfo          => alchemist.net.message.backend.GetMatrixHandle.decoder
     case Command.SendMatrixBlocks    => alchemist.net.message.backend.SendIndexedRow.decoder
+    case Command.RequestMatrixBlocks => alchemist.net.message.backend.RequestMatrixBlock.decoder
 
     case c => throw new NotImplementedError(s"No BackendMessage.decoder implemented for $c")
   }

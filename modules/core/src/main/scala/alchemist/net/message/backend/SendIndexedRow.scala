@@ -2,10 +2,14 @@ package alchemist.net.message.backend
 
 import scodec.Decoder
 
+import alchemist.data.Matrix.MatrixId
+import alchemist.net.codecs.{ alchemistIntCodec, alchemistMatrixIdCodec }
 import alchemist.net.message.BackendMessage
 
-final case class SendIndexedRow(value: Long) extends BackendMessage
+// MatrixId/NumberOfRows(Long)
+final case class SendIndexedRow(xs: List[Byte]) extends BackendMessage
 
 object SendIndexedRow {
-  val decoder: Decoder[SendIndexedRow] = scodec.codecs.long(64).as[SendIndexedRow].asDecoder
+  val decoder: Decoder[SendIndexedRow] =
+    scodec.codecs.listOfN(scodec.codecs.provide(8), scodec.codecs.byte).as[SendIndexedRow].asDecoder
 }

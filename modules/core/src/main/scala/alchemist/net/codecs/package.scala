@@ -42,35 +42,31 @@ package object codecs {
   val alchemistStringCodec: Codec[String] = getCodec(Datatype.String, utf8_16)
 
   val alchemistMatrixBlockCodec: Codec[MatrixBlock] = {
+    import alchemist.data.{ColumnInfo, RowInfo}
 
-    val encoder: Encoder[MatrixBlock] = new Encoder[MatrixBlock] {
+    val rowCodec    = (long64 :: long64 :: long64).as[RowInfo].withContext("row_info")
+    val columnCodec = (long64 :: long64 :: long64).as[ColumnInfo].withContext("column_info")
 
-      override def encode(value: MatrixBlock): Attempt[BitVector] =
-        for {
-          rows <- Encoder.encodeSeq(long64)(value.rows.toIndexedSeq)
-          cols <- Encoder.encodeSeq(long64)(value.columns.toIndexedSeq)
-          data <- Encoder.encodeSeq(double)(value.data.toIndexedSeq)
-        } yield rows ++ cols ++ data
-      override def sizeBound: SizeBound = SizeBound.unknown
-    }
+    import shapeless.{ ::, HNil }
 
-    val decoder: Decoder[MatrixBlock] = new Decoder[MatrixBlock] {
+    def calculate(start: Long, end: Long, step: Long): Long =
+      math.ceil(((end - start) / step) + 1).toLong
 
-      private def calculate(a: IndexedSeq[Long]): Long =
-        math.ceil(1.0 * ((a(1) - a(0)) / a(2)) + 1).toLong
+    val codec = "matrix_block" | {
+      (("row" | rowCodec) :: ("column" | columnCodec))
+        .flatAppend {
+          case (row :: column :: HNil) =>
 
-      override def decode(bits: BitVector): Attempt[DecodeResult[MatrixBlock]] =
-        for {
-          rowsDR <- Decoder.decodeCollect(long64, Some(3))(bits)
-          rows = rowsDR.value
-          colsDR <- Decoder.decodeCollect(long64, Some(3))(rowsDR.remainder)
-          cols = colsDR.value
-          size = calculate(rows) * calculate(cols)
-          data <- Decoder.decodeCollect(double, Some(size.toInt))(colsDR.remainder)
-        } yield data.map(d => MatrixBlock(d.toArray, rows.toArray, cols.toArray))
-    }
+            val size = calculate(row.start, row.end, row.step) * calculate(column.start, column.end, column.step)
+            val f: Byte => Codec[Vector[Double]] =
+              b => if (b == 0) provide(Vector.empty[Double]) else vectorOfN(provide(size.toInt), double)
+            val g: Vector[Double] => Byte = vs => if (vs.isEmpty) 0 else 1
 
-    getCodec(Datatype.MatrixBlock, Codec(encoder, decoder))
+            ("empty" | byte).consume(f)(g)
+        }
+    }.as[MatrixBlock]
+
+    getCodec(Datatype.MatrixBlock, logFailuresToStdOut(codec, "MATRXI_BLOCK DECODER"))
   }
 
   val alchemistWorkerIdCodec: Codec[Worker.WorkerId] = short16.as[Worker.WorkerId]

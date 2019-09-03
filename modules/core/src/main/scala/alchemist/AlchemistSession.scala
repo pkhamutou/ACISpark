@@ -6,7 +6,9 @@ import cats.implicits._
 
 import cats.Monad
 import com.typesafe.scalalogging.LazyLogging
-import org.apache.spark.mllib.linalg.distributed.{DistributedMatrix, IndexedRowMatrix}
+import org.apache.spark.mllib.linalg.distributed.{DistributedMatrix, IndexedRow, IndexedRowMatrix}
+import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.rdd.RDD
 
 import alchemist.data.{Library, Matrix, Worker}
 import alchemist.library.Param
@@ -49,10 +51,11 @@ final class AlchemistSession[F[_]: Sync: LiftIO](
     protocol.runTask(clientId, sessionId, library.id, methodName, args)
 
   def getMatrixHandle(matrix: DistributedMatrix): F[Matrix] =
-    protocol.getMatrixHandle(clientId, sessionId, "Neo", matrix.numRows(), matrix.numCols(), 0, Layout.MC_MR)
+    protocol.getMatrixHandle(clientId, sessionId, "Neo", matrix.numRows(), matrix.numCols(), 0, Layout.VC_STAR)
 
   def sendIndexedRowMatrix(matrix: Matrix, indexedRowMatrix: IndexedRowMatrix): F[List[Header]] =
     workersRef.get.flatMap { workers =>
+      println("PARTITIONS: " + indexedRowMatrix.rows.getNumPartitions)
       indexedRowMatrix.rows.mapPartitions { rows =>
         val indexedRows = rows.toArray
 
@@ -70,6 +73,30 @@ final class AlchemistSession[F[_]: Sync: LiftIO](
       .toList
       .pure[F]
     }
+
+  def getIndexRowMatrix(spark: org.apache.spark.sql.SparkSession, matrix: Matrix): F[RDD[IndexedRow]] = {
+    val rows = spark.sparkContext.parallelize(0L until matrix.numOfRows).repartition(4)
+    println("PARTITIONS: " + rows.getNumPartitions)
+    workersRef.get.flatMap { workers =>
+      rows
+        .mapPartitionsWithIndex { (idx, d) =>
+          val indices                       = d.toArray
+          implicit val cs: ContextShift[IO] = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
+          val result = workers.traverse(WorkerProtocol.make[IO]).use { wps =>
+            wps.traverse(wp => wp.get(matrix, indices))
+          }
+
+          result
+            .map(_.map(b => IndexedRow(b.block.row.start, new DenseVector(b.block.data.toArray))))
+            .unsafeRunSync()
+            .toIterator
+        }
+        .pure[F]
+
+    }
+  }
+
 
 
   def close(): Unit =

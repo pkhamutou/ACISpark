@@ -12,31 +12,31 @@ final case class Matrix(
   grid: Matrix.ProcessGrid
 ) {
 
-  def getColumnAssignments(workerId: Short): Array[Long] =
+  def getColumnAssignments(workerId: Short): ColumnInfo =
     if (numOfColumns == 1)
-      Array(0, 0, 1)
+      ColumnInfo(0, 0, 1)
     else if (layout == Layout.MC_MR)
-      Array(grid.array(workerId)(0), numOfColumns - 1, grid.numOfColumns)
+      ColumnInfo(grid.array(workerId)(0), numOfColumns - 1, grid.numOfColumns)
     else if (layout == Layout.MR_MC)
-      Array(grid.array(workerId)(1), numOfColumns - 1, grid.numOfRows)
+      ColumnInfo(grid.array(workerId)(1), numOfColumns - 1, grid.numOfRows)
     else if (layout == Layout.VC_STAR)
-      Array(grid.array(workerId)(0), numOfColumns - 1, 1)
+      ColumnInfo(grid.array(workerId)(0), numOfColumns - 1, 1)
     else if (layout == Layout.VR_STAR)
-      Array(grid.array(workerId)(0), numOfColumns - 1, 1)
+      ColumnInfo(grid.array(workerId)(0), numOfColumns - 1, 1)
     else ???
 
-  def getRowAssignments(workerId: Short): Array[Long] =
+  def getRowAssignments(workerId: Short): RowInfo =
     if (numOfRows == 1)
-      Array(0, 0, 1)
+      RowInfo(0, 0, 1)
     else {
       if (layout == Layout.MC_MR)
-        Array(grid.array(workerId)(0), numOfRows - 1, grid.numOfRows)
+        RowInfo(grid.array(workerId)(0), numOfRows - 1, grid.numOfRows)
       else if (layout == Layout.MR_MC)
-        Array(grid.array(workerId)(1), numOfRows - 1, grid.numOfColumns)
+        RowInfo(grid.array(workerId)(1), numOfRows - 1, grid.numOfColumns)
       else if (layout == Layout.VC_STAR)
-        Array(grid.array(workerId)(1), numOfRows - 1, grid.numOfColumns * grid.numOfRows)
+        RowInfo(grid.array(workerId)(1), numOfRows - 1, grid.numOfColumns * grid.numOfRows)
       else if (layout == Layout.VR_STAR)
-        Array(grid.array(workerId)(1), numOfRows - 1, grid.numOfColumns * grid.numOfRows)
+        RowInfo(grid.array(workerId)(1), numOfRows - 1, grid.numOfColumns * grid.numOfRows)
       else ???
     }
 }

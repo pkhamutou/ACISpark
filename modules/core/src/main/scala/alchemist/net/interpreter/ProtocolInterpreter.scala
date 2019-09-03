@@ -5,7 +5,7 @@ import cats.syntax.functor._
 
 import cats.FlatMap
 
-import alchemist.data.{ Library, Matrix, Worker }
+import alchemist.data._
 import alchemist.library.Param
 import alchemist.net.{ MessageSocket, Protocol }
 import alchemist.net.message._
@@ -15,10 +15,10 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
 
   override def handshake(): F[ConnectionInfo] = {
 
-    val matrix = alchemist.data.MatrixBlock(
-      data = (3 to 14).map(_ * 1.11d).toArray,
-      rows = Array(0, 3, 1),
-      columns = Array(0, 2, 1)
+    val matrix = MatrixBlock(
+      row = RowInfo(0, 3, 1),
+      column = ColumnInfo(0, 2, 1),
+      data = (3 to 14).map(_ * 1.11d).toVector
     )
 
     val handshake = Handshake(2, 1234, "ABCD", 1.11d, 2.22d, matrix, 190)
@@ -27,8 +27,8 @@ private[net] class ProtocolInterpreter[F[_]: FlatMap](ms: MessageSocket[F]) exte
     implicit val encoder: FrontendMessage[Handshake] = FrontendMessage.prefixed[Handshake](header)
 
     ms.send(handshake).flatMap(_ => ms.receive).map {
-      case (h: Header, hsOk: HandshakeOk) => println(hsOk); ConnectionInfo(h.clientId, h.sessionId)
-      case _                              => throw new Exception("Boom!")
+      case (h: Header, _: HandshakeOk) => ConnectionInfo(h.clientId, h.sessionId)
+      case _                           => throw new Exception("Boom!")
     }
   }
 

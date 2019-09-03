@@ -1,16 +1,21 @@
 package alchemist
 
-import cats.effect.{Concurrent, ContextShift, Effect, IO}
+import cats.effect.{Concurrent, ContextShift, Effect, IO, Timer}
 
 import cats.Traverse
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.{Matchers, WordSpec}
+import scala.concurrent.duration.DurationInt
+
+import org.apache.spark.rdd.RDD
 
 import alchemist.library.Param
 
 class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
 
   implicit val cs: ContextShift[IO] = IO.contextShift(scala.concurrent.ExecutionContext.global)
+  implicit val timer: Timer[IO] = IO.timer(scala.concurrent.ExecutionContext.global)
+
   "it" should {
     "work" in {
 
@@ -25,6 +30,7 @@ class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
             .range(rows)
             .rdd
             .map(row => IndexedRow(row, new DenseVector(Array.fill(cols.toInt)(r.nextDouble()))))
+            .repartition(4)
         )
       }
 
@@ -39,6 +45,14 @@ class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
         Param("in_string", "test string")
       )
       args.foreach(println)
+
+      def printRows(irows: RDD[IndexedRow]): Unit = {
+        irows.mapPartitionsWithIndex { case (i, rows) =>
+          val p = rows.toList
+          println(s"PARTITION: $i $p")
+          List().toIterator
+        }.count()
+      }
 
       val prg = AlchemistSession.make[IO]("localhost", 24960).use { session =>
         for {
@@ -59,11 +73,20 @@ class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
           rargs <- session.runTask(lib, "greet", args)
           _   = println(rargs)
           _   = println("Start sending matrix ...")
+          _   = println("\n\n\n\n\n\n\n\n")
           indexRows = getMatrix(20, 5)
           matrix <- session.getMatrixHandle(indexRows)
           _ = println(matrix)
           hs <- session.sendIndexedRowMatrix(matrix, indexRows)
           _ = println(hs)
+          _ = println("--------------- MATRIX WAS SENT -------------------")
+          r <- session.getIndexRowMatrix(spark, matrix).flatMap(rmx => IO.pure((indexRows.rows, rmx)))
+          _ = println("\n comparison \n")
+          _ = println(r._1.count)
+          _ = println(r._2.count)
+//          _ = printRows(r._1)
+          _ = println()
+//          _ = printRows(r._2)
         } yield ()
       }
 
@@ -71,3 +94,8 @@ class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
     }
   }
 }
+/*
+
+IndexedRow(8,[0.4457367367074283,0.6008140654988429,0.550376169584217,0.6580583901495688,0.9744965039734514])
+IndexedRow(8,[0.4457367367074283,0.6008140654988429,0.550376169584217,0.6580583901495688,0.9744965039734514])
+ */
