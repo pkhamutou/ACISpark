@@ -4,7 +4,9 @@ final case class MatrixBlock(
   row: RowInfo,
   column: ColumnInfo,
   data: Vector[Double]
-)
+) {
+  val index: Long = row.start
+}
 
 object MatrixBlock {
 

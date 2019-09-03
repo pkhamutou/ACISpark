@@ -36,7 +36,7 @@ final class WorkerProtocol[F[_]: FlatMap](
     }
   }
 
-  def get(mh: Matrix, rowIndices: Array[Long]): F[RequestMatrixBlock] = {
+  def get(mh: Matrix, rowIndices: Array[Long]) = {
     println(s"get worker[${worker.id} ${this.hashCode()}, $clientId, $sessionId]")
     val header = Header.request(clientId, sessionId, Command.RequestMatrixBlocks)
 
@@ -73,7 +73,7 @@ final class WorkerProtocol[F[_]: FlatMap](
 
     rowIndices
       .filter(workerRows.contains)
-      .map(row => { println(s"Worker [${worker.id.value} $row]"); MatrixBlock(RowInfo.single(row), colInfo, Vector.empty[Double]) } )
+      .map(row => MatrixBlock(RowInfo.single(row), colInfo, Vector.empty[Double]))
   }
 }
 

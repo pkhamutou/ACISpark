@@ -10,7 +10,7 @@ import org.apache.spark.mllib.linalg.distributed.{DistributedMatrix, IndexedRow,
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.rdd.RDD
 
-import alchemist.data.{Library, Matrix, Worker}
+import alchemist.data.{Library, Matrix, MatrixBlock, Worker}
 import alchemist.library.Param
 import alchemist.net.{Protocol, WorkerProtocol}
 import alchemist.net.message.{ClientId, Header, Layout, SessionId}
@@ -77,6 +77,10 @@ final class AlchemistSession[F[_]: Sync: LiftIO](
   def getIndexRowMatrix(spark: org.apache.spark.sql.SparkSession, matrix: Matrix): F[RDD[IndexedRow]] = {
     val rows = spark.sparkContext.parallelize(0L until matrix.numOfRows).repartition(4)
     println("PARTITIONS: " + rows.getNumPartitions)
+
+    val f: Vector[MatrixBlock] => Vector[IndexedRow] =
+      _.map(mb => IndexedRow(mb.index, new DenseVector(mb.data.toArray)))
+
     workersRef.get.flatMap { workers =>
       rows
         .mapPartitionsWithIndex { (idx, d) =>
@@ -88,8 +92,9 @@ final class AlchemistSession[F[_]: Sync: LiftIO](
           }
 
           result
-            .map(_.map(b => IndexedRow(b.block.row.start, new DenseVector(b.block.data.toArray))))
+            .map(_.map(b => f(b.blocks)))
             .unsafeRunSync()
+            .flatten
             .toIterator
         }
         .pure[F]

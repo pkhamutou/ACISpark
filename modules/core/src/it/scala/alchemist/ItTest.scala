@@ -84,9 +84,10 @@ class ItTest extends WordSpec with Matchers with DataFrameSuiteBase {
           _ = println("\n comparison \n")
           _ = println(r._1.count)
           _ = println(r._2.count)
-//          _ = printRows(r._1)
+          _ = println("\n\n")
+          _ = r._1.foreach(println)
           _ = println()
-//          _ = printRows(r._2)
+          _ = r._2.foreach(println)
         } yield ()
       }
 
