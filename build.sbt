@@ -7,8 +7,10 @@ ThisBuild / autoStartServer := false
 lazy val SparkVersion      = "2.3.3"
 lazy val SparkTestVersion  = s"${SparkVersion}_0.12.0"
 lazy val EnumeratumVersion = "1.5.13"
-lazy val CatsCoreVersion   = "1.6.0"
+lazy val ScodecVersion     = "1.11.4"
+lazy val CatsCoreVersion   = "1.6.1"
 lazy val CatsEffectVersion = "1.3.1"
+lazy val Fs2Version        = "1.0.5"
 lazy val ScalaLogging      = "3.9.2"
 lazy val ScoptVersion      = "3.7.1"
 lazy val ScalaTestVersion  = "3.0.7"
@@ -19,8 +21,19 @@ lazy val testSettings = Seq(
   parallelExecution in Test := false,
   fork in Test := true,
   test in assembly := {},
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
 )
+
+lazy val itSettings =
+  inConfig(IntegrationTest)(
+    Defaults.testSettings ++
+      org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings ++
+      Seq(
+        parallelExecution in IntegrationTest := false,
+        fork in IntegrationTest := true,
+        testOptions in IntegrationTest += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+      )
+  )
 
 lazy val compilerSettings = Seq(
   javacOptions ++= Seq(
@@ -44,23 +57,30 @@ lazy val compilerSettings = Seq(
   )
 )
 
+lazy val ItTest = "it,test"
+
 lazy val fmtSettings = Seq(
   scalafmtOnCompile := false,
   scalastyleConfig := file("project/scalastyle_config.xml")
 )
 
 lazy val `alchemist-core` = (project in file("modules/core"))
-  .settings(testSettings, compilerSettings, fmtSettings)
+  .configs(IntegrationTest)
+  .settings(testSettings, compilerSettings, fmtSettings, itSettings)
   .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.spark"           %% "spark-mllib"        % SparkVersion % Provided,
       "com.beachape"               %% "enumeratum"         % EnumeratumVersion,
+      "org.scodec"                 %% "scodec-core"        % ScodecVersion,
       "org.typelevel"              %% "cats-core"          % CatsCoreVersion,
       "org.typelevel"              %% "cats-effect"        % CatsEffectVersion,
+      "co.fs2"                     %% "fs2-core"           % Fs2Version,
+      "co.fs2"                     %% "fs2-io"             % Fs2Version,
       "com.typesafe.scala-logging" %% "scala-logging"      % ScalaLogging,
-      "org.scalatest"              %% "scalatest"          % ScalaTestVersion % Test,
-      "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % Test
+      "org.scalatest"              %% "scalatest"          % ScalaTestVersion % ItTest,
+      "com.holdenkarau"            %% "spark-testing-base" % SparkTestVersion % ItTest,
+      "org.apache.spark"           %% "spark-hive"         % SparkVersion % ItTest
     )
   )
 
